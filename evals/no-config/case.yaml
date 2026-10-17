@@ -1,0 +1,26 @@
+schema_version: "1"
+name: no-config
+description: The vault has no .claude/para/vault.md; a write skill must stop and create nothing.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:projects create Ремонт балкона"
+  max_turns: 15
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: stop-message
+    pattern: '/para:init'
+  - type: file_exists
+    name: no-config-written
+    path: ".claude/para/vault.md"
+    exists: false
+  - type: file_exists
+    name: no-notes-in-cwd
+    path: "Second-brain"
+    exists: false
+  - type: file_exists
+    name: no-project-created
+    path: "My Drive/legacy vault/Second-brain/Projects/PROJ-0004 Ремонт балкона"
+    exists: false

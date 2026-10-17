@@ -1,0 +1,25 @@
+schema_version: "1"
+name: projects-list
+description: /para:projects list on the legacy fixture, Todoist unavailable (no connector in the eval child).
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:projects list"
+  max_turns: 25
+  allowed_tools: [Read, Glob, Grep, Bash]
+runs: 1
+graders:
+  - type: regex
+    name: order-by-deadline
+    # thresholds.md "Project order": nearest deadline first, blank last. Ids run the other way round.
+    pattern: 'Ремонт кухни[\s\S]*Поездка в горы[\s\S]*Сайт студии'
+  - type: regex
+    name: unpaired-marked
+    pattern: 'Поездка в горы[^\n]*нет пары в Todoist'
+  - type: regex
+    name: legacy-marked
+    pattern: 'Сайт студии[^\n]*старый формат'
+  - type: regex
+    name: archived-not-listed
+    pattern: 'Старый проект'
+    match: not_contains
