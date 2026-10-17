@@ -36,9 +36,9 @@ that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
 
 2. **If the target is a project:**
    - **Open tasks first.** Read the paired project's tasks (`task.list`, open,
-     with the overview's `tasks_ref`). If tasks are open, list them and ask once (Tier 1.5)
-     what happens to them: complete them, move them to an area project
-     (`AREA_TASK_PROJECTS`), or leave them inside the archived project (`task.move` moves one). Carry the
+     with `project_ref`). If tasks are open, list them and ask once (Tier 1.5)
+     what happens to them: complete them, move them to an area project (`task.move` with `area`)
+     or leave them inside the archived project. Carry the
      answer out before going on. An unpaired project with a legacy `Tasks/` folder has
      no backend side; `dod.md` says how its tasks are checked.
    - Apply `dod.md` and name every condition that does not hold. That file decides
@@ -48,7 +48,7 @@ that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
      `Projects/PROJ-xxxx <title>/` to `Archive/PROJ-xxxx <title>/`. The name stays
      exactly as it is: the id stays with the project for life, and id issuance scans
      `Archive/` to keep it reserved (`project-id.md`).
-   - `project.archive` when paired. Keep
+   - `project.archive` when paired (always, under `pairing: none`; a no-op there). Keep
      `tasks_ref:` in the overview — restore needs it.
    - Legacy fields (`status` and the rest) are left exactly as they are
      (`note-format.md`): an archived project keeps its history.
@@ -126,9 +126,10 @@ opens with the user's own words, as in projects archived before this rule — pr
    convention, ask where it belongs. Nothing is restored into `Inbox/` — it is not a
    destination (`paths.md`).
 3. **Check the basename for collisions** as above, then move.
-4. **The task side — projects only.** With `tasks_ref:` set, `project.restore`. Without
-   it, offer to create the pair (`tasks.md` «Pairing»); on yes, `project.create`, add
-   a `tasks_ref:` key and fill it. Leave ticked checkboxes in `# Критерий готовности` and
+4. **The task side — projects only.** `project.restore` with the `ref`. Under
+   `pairing: separate` with no `tasks_ref:`, offer to create the pair (`tasks.md`
+   «Pairing»); on yes, `project.create`, add a `tasks_ref:` key and fill it. Under
+   `pairing: none` there is no pair to offer. Leave ticked checkboxes in `# Критерий готовности` and
    the `# Что изменилось` section as they are — editing them is Tier 2 and rarely
    wanted.
 5. **Report**: what came back, to where, and the state of its backend pair.

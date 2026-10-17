@@ -25,50 +25,67 @@ it **per the adapter for `TASKS`** (`paths.md` says where the adapter file is).
 
 ## Operations
 
-Inputs and results are the contract; the adapter decides how they are met. `ref` is the
-project's `tasks_ref` (below). A *task* in a result carries: `id`, `text`, `description`
-(may be empty), `duration` (may be empty), `due` (date, may be empty), `labels`,
-`created`.
+Inputs and results are the contract; the adapter decides how they are met. A *task* in a
+result carries: `id`, `text`, `description` (may be empty), `duration` (may be empty),
+`due` (a date, may be empty), `labels`, `created`. Whether a task is *overdue* is
+decided in one place, `thresholds.md` «Task counts».
+
+Two ways to name where a task lives, **exactly one given, never guessed**:
+`project_ref` — a paired project's `tasks_ref` (see «Pairing»); `area` — a name from
+`AREA_TASK_PROJECTS` in `areas.md`.
 
 | Operation | Input | Result |
 |---|---|---|
-| `inbox.add` | `text`; `description` (optional, for a long capture) | the new capture's `id` |
+| `inbox.add` | `title`; `description` (optional) | the new capture's `id` |
 | `inbox.list` | — | every open capture as a task, oldest first |
-| `inbox.close` | capture `id` | nothing; the capture is closed, reversibly, never destroyed |
+| `inbox.close` | capture `id` | nothing. Closing is reversible and never destroys the capture — the one statement of that; callers point here |
 | `project.create` | `title` (without the `PROJ-xxxx` prefix); `description` (the `PROJ-xxxx` id) | the new project's `ref` |
 | `project.archive` | `ref` | nothing |
 | `project.restore` | `ref` | nothing |
 | `project.delete` | `ref` | nothing; Tier 2, the skill has asked (`confirm.md`) |
-| `task.add` | `ref` or an area project's name; `text`; `description`, `duration`, `due`, `labels` (all optional) | the new task's `id` |
-| `task.list` | `ref` or an area project's name; `state`: `open` (default) or `completed` with a period | tasks of that project; for `open`, each with `due` and an overdue flag |
-| `task.move` | task `id`; destination `ref` or area project's name | nothing; the task keeps its date, recurrence and `id` |
-| `project.activity` | `ref` | the time of the latest event (a task added, completed, changed), plus the project's `state`: `active`, `archived` or `missing`; or «not supported» (also when no event can be found) |
-| `task.label` | task `id`; `label` | nothing; **optional** — «not supported» is a normal answer |
+| `project.list` | — | the backend's projects as (`ref`, `name`, `is_inbox`, `is_archived`); **optional** — a ledgered addition to the original twelve operations; «not supported» is a normal answer |
+| `task.add` | `project_ref` or `area`; `text`; `description`, `duration`, `due`, `labels` (all optional) | the new task's `id` |
+| `task.list` | `project_ref` or `area`; `state`: `open` (default) or `completed`; for `completed`, `since` and `until` as `YYYY-MM-DD` | the tasks, each with its `due` date |
+| `task.move` | task `id`; destination `project_ref` or `area` | nothing; the task keeps its date, recurrence and `id` |
+| `project.activity` | `ref` | `state`: `active`, `archived` or `missing` — **always returned**; `last_event`: the time of the latest event (a task added, completed, changed) — **may be absent** («no events found», or not supported) |
+| `task.label` | task `id`; `label` | nothing; **optional**. Used only when the adapter marks `labels` on `task.add` unsupported; otherwise pass `labels` to `task.add` |
 
 Notes on the table:
 
 - **`inbox.*`** work on the backend's inbox, whatever the backend calls it. In the
   `files` backend that is a folder (`paths.md`).
-- **Pairing operations** (`project.*`) have no meaning where the backend has no
-  separate project; such an adapter says what it does instead.
-- **`project.activity` `state`** is what lets `/vault-lint` tell «pair lost» (`missing`)
-  from «closed on one side only» (`archived`) without a call of its own.
+- **`inbox.add`**: the skill owns how a long capture becomes a short `title` plus the
+  full text as `description`; the adapter passes both through.
+- **`project.activity`**: `state` is what lets `/vault-lint` tell «pair lost»
+  (`missing`) from «closed on one side only» (`archived`). A pair check depends on
+  `state` only and is never skipped because `last_event` is absent. Staleness
+  (`thresholds.md`) falls back to mtime only when `last_event` is absent.
+- **`project.list`** is one call: a reader that needs «backend projects no overview
+  points at» calls it once and matches by `ref`. The inbox (`is_inbox`) and the
+  `AREA_TASK_PROJECTS` projects are not findings.
 - **Dates** are never inferred. See «Fields».
 
 ## Pairing
 
-Every project in `Projects/` has exactly one project in the backend, and the reverse.
+Each adapter declares `pairing:` once, at its top.
 
-- **Name** — the project's `title`, without the `PROJ-xxxx` prefix.
-- **Description** — the project's `PROJ-xxxx`.
-- **Vault side** — the overview's frontmatter field `tasks_ref`, holding the backend's
-  project id as a quoted string: `tasks_ref: "6Xexample0000000"`.
-- **The key is the id, never the name.** A project renamed on either side stays
-  paired. Two overviews carrying the same id is a lint finding.
-
-A project in `Projects/` without `tasks_ref` is **unpaired** — every project created
-before this file existed, until it is migrated. Report it as «нет пары в менеджере
-задач» and carry on; never create the pair as a side effect of reading.
+- **`pairing: separate`** (a backend with projects of its own): every project in `Projects/` has exactly
+  one project in the backend, and the reverse.
+  - **Name** — the project's `title`, without the `PROJ-xxxx` prefix.
+  - **Description** — the project's `PROJ-xxxx`.
+  - **Vault side** — the overview's frontmatter field `tasks_ref`, holding the backend's
+    project id as a quoted string: `tasks_ref: "6Xexample0000000"`. This is `ref`.
+  - **The key is the id, never the name.** A project renamed on either side stays
+    paired. Two overviews carrying the same id is a lint finding.
+  - A project in `Projects/` without `tasks_ref` is **unpaired** — every project created
+    before this file existed, until it is migrated. Report it as «нет пары в менеджере
+    задач» and carry on; never create the pair as a side effect of reading. Steps that
+    resolve `tasks_ref` or offer a pair apply only under this value.
+- **`pairing: none`** (the `files` backend): the project is its own task list. `tasks_ref` is absent
+  and not required; `ref` is the project folder itself, derived from its path and never
+  stored. «Unpaired» does not exist: no «нет пары», no offer to create a pair.
+  `project.create`, `project.archive`, `project.restore` and `project.delete` are no-ops
+  (the folder moves are the skills' own).
 
 Lifecycle, both sides together: a project exists while the user means to finish it;
 finished or abandoned, the folder goes to `Archive/` and the backend project is
@@ -83,7 +100,7 @@ short check task, dated for the day it makes sense: «Проверить, отв
 Tasks that belong to no project — chores, one-off errands, anything an area produces —
 go to one backend project per area group. Their names are the `AREA_TASK_PROJECTS`
 key in `areas.md`. They have no folder in `Projects/`, are never reported as unpaired,
-and operations accept them by name where the table says «area project's name».
+and operations take them as `area`.
 
 ## What a task is
 
@@ -118,9 +135,9 @@ A project whose work is not yet clear — every new project, and any project whe
 the user cannot name the next steps — gets **one** task first, and no others:
 
 - name: `Ресерч «<short>»: определить скоуп работ`;
-- label `research` (via `task.label` if `task.add` was not given `labels`) — the only
-  label in use; it makes every open research a filter away. Where labels are not
-  supported the name alone marks it;
+- label `research` (passed as `labels` to `task.add`) — the only
+  label in use; it makes every open research a filter away. Where `task.add` cannot take labels, `task.label`; where
+  that is unsupported too, the name alone marks it;
 - description: what has to be found out, taken from the project's goal and problem,
   and the done condition — «в заметке проекта заполнен „Скоуп работ“, по его пунктам
   заведены задачи»;

@@ -15,8 +15,8 @@ changes with it.
 | An area has gone quiet | **60 days** | `/areas review` |
 
 A **paired** project is measured from `project.activity` (`tasks.md`) — the latest event
-in its backend project. When the adapter marks `project.activity` «not supported», or
-the project is unpaired, it is measured like an area: from the mtime of the newest file in the folder or of
+in its backend project. When `last_event` is absent (no events found, or the adapter does
+not support it), or the project has no pair (`tasks.md` «Pairing»), it is measured like an area: from the mtime of the newest file in the folder or of
 the note (`stat -f '%m %N'`).
 
 The two numbers differ by design: areas move slowly by nature, and an area silent for a
@@ -58,11 +58,11 @@ a folder is small, read all of it.
 Computed one way wherever they appear, from the paired backend project (`task.list`):
 
 - **запланировано** — open tasks dated today or later;
-- **просрочено** — open tasks dated before today;
+- **просрочено** — open tasks dated before today (this is where «overdue» is defined);
 - **в бэклоге** — open tasks with no date;
 - **закрыто** — completed tasks, over the period the caller names.
 
-No pair → no counts: say «нет пары в менеджере задач», never `0`.
+Under `pairing: separate`, no pair → no counts: say «нет пары в менеджере задач», never `0`.
 
 ## Acceptance
 

@@ -191,15 +191,16 @@ hardcode a second copy of the allowed list here — read it.
     | grep -vE '/(Projects|Archive)/[^/]+/[^/]+\.md$'
   ```
 
-- **Пара с менеджером задач** — per `tasks.md` «Pairing». For every overview in
-  `Projects/` with a non-blank `tasks_ref`, read `project.activity` and use its `state`:
+- **Пара с менеджером задач** — only under `pairing: separate` (`tasks.md` «Pairing»).
+  For every overview in `Projects/` with a non-blank `tasks_ref`, read
+  `project.activity` and use its `state` (always returned; `last_event` is irrelevant
+  here):
   - `missing` → «пара потеряна»;
   - `archived` while the folder is in `Projects/` → «в менеджере задач закрыт, в
     хранилище нет» — offer `/archive`, never move it here;
   - the same id on two overviews → name both (a file check, no call needed).
 
-  If the backend is unavailable or the adapter marks `project.activity` «not
-  supported», say so in one line and skip this check — never report every project as
+  If the backend is unavailable, say so in one line and skip this check — never report every project as
   broken (`tasks.md` «Backend missing»).
 
 ---
@@ -229,9 +230,12 @@ the vault is allowed to be in.
     [ -f "${f% 2.md}.md" ] && echo "$f"; done
   ```
 
-- **Без пары** — projects in `Projects/` with a blank or missing `tasks_ref`. (Backend
-  projects that no overview points at are not listed: the contract has no operation
-  that lists a backend's projects.)
+- **Без пары** — only under `pairing: separate`; two lists. Projects in `Projects/` with
+  a blank or missing `tasks_ref`. Backend projects that no overview in `Projects/` or
+  `Archive/` points at: `project.list` once, matched by `ref`, leaving out the inbox
+  (`is_inbox`) and the `AREA_TASK_PROJECTS` names (`areas.md`); an archived backend
+  project paired with an overview in `Archive/` is the normal closed state, not a
+  finding. Skip the second list when `project.list` is not supported.
 - **Старое имя поля** — overviews carrying `todoist:` where `tasks_ref:` is now
   expected (`note-format.md`). Count and names; renaming is the user's call.
 
@@ -280,7 +284,7 @@ a clean vault should print three short lines, not a wall of ✓.
 
 ### Стоит посмотреть
 - Старый формат: 3 проекта — PROJ-0008 (status, priority, value, estimate, Tasks/(7)), …
-- Без пары: 3 проекта в хранилище
+- Без пары: в хранилище 3, в менеджере задач 1 («Проект Д»)
 - Сирот: 12 (из них 1 в Archive — это нормально)
 - Без frontmatter: 8, все в `Resources/<Тема>/` и `Archive/`
 ```

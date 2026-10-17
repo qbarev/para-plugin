@@ -35,8 +35,9 @@ and ask.
 
 ### `add <текст>` — capture
 
-1. **`inbox.add`** with the text. A long text goes in as the description, with a short
-   Russian title derived from it (6 words or fewer).
+1. **`inbox.add`** with a `title` and optional `description`. A short text is the title
+   as given. A long one gets a short Russian title derived from it (6 words or fewer)
+   and the full text verbatim as the description.
 2. **Set nothing else** — no date, priority or labels unless the user said them.
    This is a buffer, not a place to tidy the user's thought into shape.
 3. **Report** in one line what was created, so the user can rename if they disagree.
@@ -89,13 +90,13 @@ inbox with proposed destinations and ask the user to approve in bulk.
 4. **Close the capture** once its route is carried out:
 
    - **Backend capture** — routed into the vault, turned into a project task, or junk →
-     `inbox.close`. Closing is reversible, so it is Tier 1 (`confirm.md`). **Действие**
-     moves the task itself (`task.move` to the area project) and leaves it open;
+     `inbox.close` — reversible (`tasks.md`), so Tier 1 (`confirm.md`). **Действие**
+     moves the task itself (`task.move` with `area`) and leaves it open;
      **Оставить** leaves it where it is.
    - **Stray file** in `Inbox/` — after `/projects create`, `/areas create` or
      `/resources create` has taken its content, remove the file via `/remove`; for
      **Удалить**, hand it to `/remove` directly. **Действие** turns it into a task
-     with `task.add` in the chosen area project, then remove the file the same way.
+     with `task.add` and `area`, then remove the file the same way.
 
 5. **Then go to the next capture.** Do not batch the closing to the end.
 

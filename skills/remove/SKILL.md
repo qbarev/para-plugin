@@ -46,8 +46,8 @@ before touching any files.
    - That it goes to the **macOS Trash** and is recoverable from there.
    - If it is a project: its `id` is being retired. Say which id, and that it will be
      written to `Archive/.removed-ids` so it is never handed to another project.
-   - If it is a project with `tasks_ref:` set: its backend project and the open tasks in it
-     (`task.list`, count them). Ask in the same question whether to delete the backend
+   - If it is a project with a backend project (`tasks_ref:` set under `pairing: separate`):
+     its backend project and the open tasks in it (`task.list`, count them). Ask in the same question whether to delete the backend
      project (`project.delete`) or archive it (`project.archive`) — leaving it alive makes
      it an orphan (`tasks.md` «Pairing»).
 

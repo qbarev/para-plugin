@@ -108,14 +108,16 @@ it in «Входящие».
 1. **Find the project** per `find-target.md`, operation «Add a task to a project».
    The target may also be an area project from `AREA_TASK_PROJECTS` in
    `areas.md` — match it by name.
-2. **Resolve the project**: the overview's `tasks_ref`, or the area project.
-   - No `tasks_ref` on the overview → say «нет пары в менеджере задач» and offer to create it
+2. **Resolve where it goes**: an area project → `area`; otherwise the overview's
+   `tasks_ref` → `project_ref` (under `pairing: none` the project folder is the `ref`
+   and this step is just the project).
+   - `pairing: separate` and no `tasks_ref` on the overview → say «нет пары в менеджере задач» and offer to create it
      (step 7 of `create`). On yes, create the pair, then continue. Never write the task
      into the vault instead.
 3. **Word the task** per `tasks.md` «What a task is». If the user's wording already
    fits, keep it; otherwise propose the reworded version in the announcement. If it
    cannot be an action, ask for the next step (Tier 1.5).
-4. **`task.add`** into that project: the text, a description for anything longer,
+4. **`task.add`** with `project_ref` or `area`: the text, a description for anything longer,
    `duration` only if given. The date rule is `tasks.md` «Fields».
 5. **Report** the task and the project.
 
@@ -134,8 +136,8 @@ surfaces something worth fixing, say so and let the user decide.
    reported as blank, never filled in from inference.
 
 3. **Read the tasks** (`task.list`, open): their dates and durations. Compute the counts
-   per `thresholds.md` «Task counts». No pair → skip, and say «нет пары в менеджере
-   задач».
+   per `thresholds.md` «Task counts». Under `pairing: separate`, no pair → skip, and
+   say «нет пары в менеджере задач».
 
 4. **Read `Notes/`** (and `Results/`, if it has anything) in full, up to the cap in
    `thresholds.md` — this is where decisions and risks actually live.
@@ -201,7 +203,7 @@ surfaces something worth fixing, say so and let the user decide.
    A folder with no frontmatter is pre-convention — print it by folder name with
    `без метаданных`.
 
-3. **Read the tasks** of each paired project (`task.list`, open), counted per `thresholds.md` «Task counts».
+3. **Read the tasks** of each paired project (`task.list` with `project_ref`, open), counted per `thresholds.md` «Task counts».
 
 4. **Order** per `thresholds.md` «Project order».
 
@@ -213,10 +215,14 @@ surfaces something worth fixing, say so and let the user decide.
    2. PROJ-0020 Проект Б — до 31.10 (14 дн) · запланировано 0 · бэклог 3
    3. PROJ-0009 Проект В — Область Б · до 28.02 · нет пары в менеджере задач · старый формат
    4. PROJ-0027 Проект Г — бэклог пуст
+   Без пары в хранилище: «Проект Д»
    ```
 
    - A past deadline: `дедлайн прошёл N дн назад`.
    - `старый формат` when legacy fields or `Tasks/` are present.
+   - The last line names backend projects that no overview points at (`project.list` once,
+     matched by `ref`; not the inbox, not `AREA_TASK_PROJECTS`). Drop it when empty or
+     when the adapter does not support `project.list`.
    - Drop any blank field rather than printing a placeholder. An empty `Projects/` is a
      valid answer: say it plainly.
 
