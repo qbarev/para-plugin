@@ -15,7 +15,7 @@ the folder holds what the project means, Todoist holds its tasks (`todoist.md`).
 Read before acting, each as `../../para/<file>.md` relative to this skill's base directory — these hold the shared rules, do not restate them from memory:
 
 - `../../para/paths.md` — always
-- `../../para/todoist.md` — always: pairing, what a task is, the sprint
+- `../../para/todoist.md` — always: pairing, what a task is
 - `../../para/find-target.md` — for `overview` and `task`
 - `../../para/note-format.md` — for `create`; for every subcommand, «Legacy fields»
 - `../../para/project-id.md` — for `create`
@@ -85,7 +85,7 @@ project is and its goal.
    `todoist:`. If the call fails, say so: the folder stays, unpaired, and
    `/projects task` will offer to pair it later.
 
-8. **First tasks** in the new project, **without dates** — dates come from planning:
+8. **First tasks** in the new project, **without dates**:
    - the research task per `todoist.md` «The research task», **always**, unless the
      user already named the full scope — then write it into `# Скоуп работ` instead;
    - steps the user named explicitly, worded per «What a task is». A step that cannot
@@ -116,8 +116,8 @@ it in «Входящие».
    fits, keep it; otherwise propose the reworded version in the announcement. If it
    cannot be an action, ask for the next step (Tier 1.5).
 4. **`add-tasks`** into that project: `content`, `description` for anything longer,
-   `duration` only if given. **Never a date** — dates are set by planning
-   (`todoist.md` «Rhythms»).
+   `duration` only if given. **Never a date** — dates are the user's
+   to give.
 5. **Report** the task and the project.
 
 ---
@@ -149,8 +149,8 @@ surfaces something worth fixing, say so and let the user decide.
 6. **Signals** — report only those that fire:
    - the project's `deadline` past, or inside the horizon in `thresholds.md`;
    - overdue tasks — say by how many days;
-   - nothing in the sprint while the deadline is inside the horizon;
-   - dated tasks without a duration (`todoist.md`: never counted as zero);
+   - nothing scheduled while the deadline is inside the horizon;
+   - dated tasks without a duration;
    - quiet longer than the project threshold in `thresholds.md`, measured as it says
      (Todoist activity when paired, mtime otherwise);
    - dangling wikilinks in `# Ссылки`;
@@ -163,7 +163,7 @@ surfaces something worth fixing, say so and let the user decide.
    ## PROJ-0001 · Проект А
 
    **Область** Область А · **Дедлайн** 31.10.2026 — 14 дней
-   **Задачи** в спринте 3 · просрочено 1 · в бэклоге 6
+   **Задачи** запланировано 3 · просрочено 1 · в бэклоге 6
    **Приёмка** ☑☐☐ 1/3
 
    ### Суть
@@ -171,7 +171,7 @@ surfaces something worth fixing, say so and let the user decide.
    <Ожидаемый результат — одной строкой.>
    <Ценность — одной строкой.>
 
-   ### В спринте
+   ### Запланировано
    - **Написать поставщику письмо** — ВТ 21.10, 30 мин
    - **Заполнить анкету** — просрочена на 2 дня, 1 ч
 
@@ -183,7 +183,7 @@ surfaces something worth fixing, say so and let the user decide.
    - <Ключевое решение или вывод из Notes/ — своими словами.>
 
    ### Сигналы
-   - Дедлайн через 14 дней, в спринте ничего
+   - Дедлайн через 14 дней, ничего не запланировано
    ```
 
    «Бэклог» shows the oldest undated tasks up to the cap in `thresholds.md`. Drop any
@@ -211,8 +211,8 @@ surfaces something worth fixing, say so and let the user decide.
 
    ```
    **Проекты (4)**
-   1. PROJ-0008 Проект А — Область А · до 31.10 (14 дн) · в спринте 2 · бэклог 3
-   2. PROJ-0020 Проект Б — до 31.10 (14 дн) · в спринте 0 · бэклог 3
+   1. PROJ-0008 Проект А — Область А · до 31.10 (14 дн) · запланировано 2 · бэклог 3
+   2. PROJ-0020 Проект Б — до 31.10 (14 дн) · запланировано 0 · бэклог 3
    3. PROJ-0009 Проект В — Область Б · до 28.02 · нет пары в Todoist · старый формат
    4. PROJ-0027 Проект Г — бэклог пуст
    Без пары в хранилище: «Проект Д» (Todoist)

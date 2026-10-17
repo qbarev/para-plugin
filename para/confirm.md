@@ -44,12 +44,6 @@ pause. Everything the user *did* supply is not re-confirmed.
 The line against Tier 1: if you could carry the operation out correctly right now, you
 are not missing input, and you do not ask.
 
-**One named exception — planning.** The rhythms in `todoist.md` («Rhythms») set and
-move dates and durations in Todoist. Those writes are reversible, but a plan is a
-proposal the user shapes, not an announced action: show the whole proposal, wait for
-«да», then write. A correction («ВТ не надо, перенеси на ЧТ») is a new proposal, not a
-yes.
-
 ## Tier 2 — irreversible: explicit yes, then proceed
 
 Deleting anything, overwriting a file that already has content, clearing ticked
