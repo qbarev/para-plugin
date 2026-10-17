@@ -53,6 +53,11 @@ done < <(awk '
   inb && /(Projects|Areas|Resources|Archive|Templates|Inbox)\// && !/PARA_ROOT|REPO_ROOT/ { print FILENAME ":" FNR ": " $0 }
 ' skills/*/SKILL.md para/*.md)
 
+# Check 5: planning (sprint, capacity, rhythms) is not part of the plugin (spec section 6).
+while IFS= read -r hit; do
+  report "planning: $hit"
+done < <(grep -nEi 'sprint|спринт|capacity|ёмкость|Rhythm|Как я рабо[т]аю|Рабочий график|Calendar' skills/*/SKILL.md para/*.md)
+
 # Check 4 (R7): optional denylist of personal terms, one per line, kept outside the repo.
 if [ -z "${PARA_DENYLIST:-}" ]; then
   echo "denylist check skipped (PARA_DENYLIST not set)"
