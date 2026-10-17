@@ -5,7 +5,9 @@ language is chosen per vault by `LANG` in `vault.md` (`paths.md` «Language»). 
 English file `en.md` carries exactly the same keys.
 
 Format: one entry per line, `key: value`. A key is lowercase, dotted, named by meaning.
-Placeholders in braces (`{n}`, `{title}`) are filled by the skill. Section values are the
+Placeholders in braces (`{n}`, `{title}`) are filled by the skill. A plural placeholder
+`{n|one|few|many}` stands for the number followed by the right form of the noun (the rule
+is written once, in `paths.md` «Language»). Dates are built from `{yyyy}`, `{mm}`, `{dd}`. Section values are the
 heading text without the leading `#`. Nothing else on a line that starts with a key.
 
 ## Note sections
@@ -39,10 +41,10 @@ common.no_metadata: без метаданных
 ## Tasks
 
 task.unpaired: нет пары в менеджере задач
-task.overdue_by: просрочена на {n} дн
+task.overdue_by: просрочена на {n|день|дня|дней}
 task.research.name: Ресерч «{short}»: определить скоуп работ
 task.research.done: в заметке проекта заполнен «{scope}», по его пунктам заведены задачи
-task.waiting.name: Проверить, ответил ли консультант
+task.waiting.name: Проверить, ответил ли {who}
 count.scheduled: запланировано
 count.overdue: просрочено
 count.backlog: в бэклоге
@@ -52,12 +54,15 @@ common.unit.min: мин
 common.unit.hour: ч
 common.unit.day: дн
 common.weekdays: ПН ВТ СР ЧТ ПТ СБ ВС
+common.date: {dd}.{mm}.{yyyy}
+common.date_short: {dd}.{mm}
+common.days: {n|день|дня|дней}
 
 ## Inbox
 
 inbox.name: Входящие
 inbox.header: **{n} во Входящих**, самой старой {days} дн
-inbox.strays: В папке Inbox/ ещё {k} файлов — разберу в /inbox process
+inbox.strays: В папке Inbox/ ещё {k|файл|файла|файлов} — разберу в /inbox process
 inbox.route.action: Действие
 inbox.route.project_task: Задача проекта
 inbox.route.project: Проект
@@ -87,8 +92,9 @@ overview.digest: Выжимка
 overview.signals: Сигналы
 overview.backlog_more: …и ещё {n}
 overview.legacy: Старый формат: {fields} — перенести при груминге
+overview.legacy_tasks: Tasks/ ({n|файл|файла|файлов})
 list.header: **Проекты ({n})**
-list.until: до {date} ({n} дн)
+list.until: до {date}
 list.deadline_passed: дедлайн прошёл {n} дн назад
 list.backlog_empty: бэклог пуст
 list.legacy: старый формат
@@ -97,13 +103,13 @@ list.orphans: Без пары в хранилище: {names}
 ## Areas
 
 areas.review.heading: Области
-areas.review.group: **{group}** — заметок: {n}, последняя правка {days} дн назад
+areas.review.group: **{group}** — {n|заметка|заметки|заметок}, последняя правка {days|день|дня|дней} назад
 areas.review.no_notes: нет заметок
-areas.review.stale: «{title}» не менялась {days} дн
+areas.review.stale: «{title}» не менялась {days|день|дня|дней}
 
 ## Vault lint
 
-lint.heading: Проверка хранилища — {n} заметок
+lint.heading: Проверка хранилища — {n|заметка|заметки|заметок}
 lint.group.breaks: Ломает хранилище
 lint.group.schema: Нарушает схему
 lint.group.review: Стоит посмотреть

@@ -27,7 +27,7 @@ The weekend in the mountains is done.
 # Scope of work
 
 
-# Acceptance criteria
+# Definition of Done
 - [ ] The trip took place
 
 # Links

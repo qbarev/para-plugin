@@ -100,9 +100,10 @@ Read only. Never open the notes beyond what is named below.
 2. For each project folder, read the overview frontmatter (`id`, `deadline`) and the
    first line of the `project.what_changed` section, if the section exists.
 3. Print two sections in `LANG`, each alphabetical, with a count in the header (the
-   `archive.list.projects` and `archive.list.notes` strings). The outcome is the first
-   line's text without its period, and the deadline is the `archive.list.deadline`
-   string; shown here with the English strings:
+   `archive.list.projects` and `archive.list.notes` strings). The outcome shown is the
+   first line without its period for a completed project, and only the word before the
+   colon for an abandoned one (the reason is not repeated); the deadline is the
+   `archive.list.deadline` string; shown here with the English strings:
 
 ```
 **Archived projects (N)**

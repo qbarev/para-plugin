@@ -27,7 +27,7 @@ created:
 # Scope of work
 
 
-# Acceptance criteria
+# Definition of Done
 - [ ] 
 
 # Links

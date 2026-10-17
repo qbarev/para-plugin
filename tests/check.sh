@@ -113,7 +113,10 @@ while IFS= read -r -d '' f; do
   while IFS= read -r hit; do
     ln=${hit%%:*}; body=${hit#*:}
     case "$f" in
-      skills/*/SKILL.md) case "$body" in description:*) continue ;; esac ;;
+      skills/*/SKILL.md)
+        # only the `description:` line inside the frontmatter block (before the second ---)
+        fmend=$(awk '/^---$/{n++; if(n==2){print NR; exit}}' "$f")
+        case "$body" in description:*) [ "$ln" -lt "${fmend:-0}" ] && continue ;; esac ;;
       tests/check.sh) case "$body" in *cyrillic-ok) continue ;; esac ;;
     esac
     report "cyrillic: $f:$ln"
@@ -124,21 +127,34 @@ while IFS= read -r -d '' f; do
   if printf '%s' "$f" | LC_ALL=C grep -q "$cyr"; then report "cyrillic: path $f"; fi
 done < <(git ls-files -z)
 
-# Check 9: lang/ru.md and lang/en.md carry the same keys, each once, none empty.
+# Check 9: every lang/<LANG>.md carries the same keys as lang/en.md (the reference), each
+# once, none empty, with the same placeholder names. The language list is whatever
+# lang/*.md exists; a new language is a new file and needs no edit here.
 # An entry is a line `key: value`; a key is lowercase, dotted.
 keyre='^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+'
-for l in ru en; do
-  [ -f "lang/$l.md" ] || report "lang: lang/$l.md does not exist"
-done
-if [ -f lang/ru.md ] && [ -f lang/en.md ]; then
-  kru=$(grep -oE "$keyre:" lang/ru.md | sort)
+langs=()
+for f in lang/*.md; do [ -e "$f" ] && langs+=("$(basename "$f" .md)"); done
+[ -f lang/en.md ] || report "lang: lang/en.md (the reference) does not exist"
+if [ -f lang/en.md ]; then
   ken=$(grep -oE "$keyre:" lang/en.md | sort)
-  while IFS= read -r k; do [ -n "$k" ] && report "lang: key '$k' is not in both ru.md and en.md"; done \
-    < <(comm -3 <(printf '%s\n' "$kru") <(printf '%s\n' "$ken") | tr -d '\t')
-  while IFS= read -r k; do [ -n "$k" ] && report "lang: duplicate key '$k' in lang/ru.md"; done < <(printf '%s\n' "$kru" | uniq -d)
   while IFS= read -r k; do [ -n "$k" ] && report "lang: duplicate key '$k' in lang/en.md"; done < <(printf '%s\n' "$ken" | uniq -d)
-  while IFS= read -r h; do report "lang: empty value $h"; done \
-    < <(grep -nE "$keyre:[[:space:]]*$" lang/ru.md lang/en.md)
+  for l in "${langs[@]}"; do
+    [ "$l" = en ] && continue
+    kl=$(grep -oE "$keyre:" "lang/$l.md" | sort)
+    while IFS= read -r k; do [ -n "$k" ] && report "lang: key '$k' is not in both en.md and $l.md"; done \
+      < <(comm -3 <(printf '%s\n' "$kl") <(printf '%s\n' "$ken") | tr -d '\t')
+    while IFS= read -r k; do [ -n "$k" ] && report "lang: duplicate key '$k' in lang/$l.md"; done < <(printf '%s\n' "$kl" | uniq -d)
+    # placeholder names (the part before any |) must match per key
+    while IFS= read -r k; do
+      k=${k%:}
+      pe=$(grep -E "^${k//./\\.}: " lang/en.md | head -1 | grep -oE '\{[a-z_]+' | sort -u | tr '\n' ' ')
+      pl=$(grep -E "^${k//./\\.}: " "lang/$l.md" | head -1 | grep -oE '\{[a-z_]+' | sort -u | tr '\n' ' ')
+      [ "$pe" = "$pl" ] || report "lang: key '$k' has different placeholders in en.md and $l.md"
+    done < <(printf '%s\n' "$ken")
+  done
+  for l in "${langs[@]}"; do
+    while IFS= read -r h; do report "lang: empty value $h"; done < <(grep -nE "$keyre:[[:space:]]*$" "lang/$l.md")
+  done
 fi
 
 # Check 10: every lang key a skill, base-layer file or config example names exists.
@@ -164,18 +180,17 @@ fi
 # and the same number of headings, and every section heading a lang key names is in that
 # language's set of templates.
 for t in Project Area Resource Note Task; do
-  for l in ru en; do
-    [ -f "templates/$l/$t.md" ] || report "templates: templates/$l/$t.md does not exist"
-  done
-  if [ -f "templates/ru/$t.md" ] && [ -f "templates/en/$t.md" ]; then
+  for l in "${langs[@]}"; do
+    [ -f "templates/$l/$t.md" ] || { report "templates: templates/$l/$t.md does not exist"; continue; }
+    [ "$l" = en ] && continue
     fm='/^---$/{n++; next} n==1 && /^[a-z_]+:/ {sub(/:.*/,""); print}'
-    [ "$(awk "$fm" "templates/ru/$t.md")" = "$(awk "$fm" "templates/en/$t.md")" ] \
-      || report "templates: $t.md frontmatter keys differ between ru and en"
-    [ "$(grep -c '^# ' "templates/ru/$t.md")" = "$(grep -c '^# ' "templates/en/$t.md")" ] \
-      || report "templates: $t.md has a different number of headings in ru and en"
-  fi
+    [ "$(awk "$fm" "templates/$l/$t.md")" = "$(awk "$fm" "templates/en/$t.md")" ] \
+      || report "templates: $t.md frontmatter keys differ between $l and en"
+    [ "$(grep -c '^# ' "templates/$l/$t.md")" = "$(grep -c '^# ' "templates/en/$t.md")" ] \
+      || report "templates: $t.md has a different number of headings in $l and en"
+  done
 done
-for l in ru en; do
+for l in "${langs[@]}"; do
   [ -f "lang/$l.md" ] || continue
   for k in project.goal project.problem project.value project.expected_result project.scope project.dod common.links \
            area.current_state area.notes resource.summary resource.own_thoughts note.essence note.open_questions; do

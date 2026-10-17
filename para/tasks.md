@@ -97,7 +97,7 @@ it is visible as recent activity (`project.activity`) and dated tasks in it.
 
 A project **waiting on someone else** (a consultant, a reply) carries a
 short check task, dated for the day it makes sense, named per the `task.waiting.name`
-string (e.g. «Check whether the consultant has replied»), 5 min.
+string (`{who}` = who is awaited, e.g. the consultant), 5 min.
 
 ## Area projects
 

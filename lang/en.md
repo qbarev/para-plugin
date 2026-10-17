@@ -5,7 +5,9 @@ language is chosen per vault by `LANG` in `vault.md` (`paths.md` «Language»). 
 Russian file `ru.md` carries exactly the same keys.
 
 Format: one entry per line, `key: value`. A key is lowercase, dotted, named by meaning.
-Placeholders in braces (`{n}`, `{title}`) are filled by the skill. Section values are the
+Placeholders in braces (`{n}`, `{title}`) are filled by the skill. A plural placeholder
+`{n|one|other}` stands for the number followed by the right form of the noun (the rule
+is written once, in `paths.md` «Language»). Dates are built from `{yyyy}`, `{mm}`, `{dd}`. Section values are the
 heading text without the leading `#`. Nothing else on a line that starts with a key.
 
 ## Note sections
@@ -15,7 +17,7 @@ project.problem: Problem
 project.value: Value
 project.expected_result: Expected result
 project.scope: Scope of work
-project.dod: Acceptance criteria
+project.dod: Definition of Done
 project.what_changed: What changed
 common.links: Links
 area.current_state: Current state
@@ -39,10 +41,10 @@ common.no_metadata: no metadata
 ## Tasks
 
 task.unpaired: no pair in the task manager
-task.overdue_by: overdue by {n} d
+task.overdue_by: overdue by {n|day|days}
 task.research.name: Research «{short}»: define the scope of work
 task.research.done: in the project note the «{scope}» section is filled in and tasks exist for its items
-task.waiting.name: Check whether the consultant has replied
+task.waiting.name: Check whether {who} has replied
 count.scheduled: scheduled
 count.overdue: overdue
 count.backlog: in backlog
@@ -52,12 +54,15 @@ common.unit.min: min
 common.unit.hour: h
 common.unit.day: d
 common.weekdays: Mon Tue Wed Thu Fri Sat Sun
+common.date: {yyyy}-{mm}-{dd}
+common.date_short: {mm}-{dd}
+common.days: {n|day|days}
 
 ## Inbox
 
 inbox.name: Inbox
 inbox.header: **{n} in the Inbox**, oldest {days} d
-inbox.strays: {k} more files in the Inbox/ folder — I will take them in /inbox process
+inbox.strays: {k|file|files} more in the Inbox/ folder — I will take them in /inbox process
 inbox.route.action: Action
 inbox.route.project_task: Project task
 inbox.route.project: Project
@@ -87,8 +92,9 @@ overview.digest: Digest
 overview.signals: Signals
 overview.backlog_more: …and {n} more
 overview.legacy: Old format: {fields} — migrate when grooming
+overview.legacy_tasks: Tasks/ ({n|file|files})
 list.header: **Projects ({n})**
-list.until: until {date} ({n} d)
+list.until: until {date}
 list.deadline_passed: deadline passed {n} d ago
 list.backlog_empty: backlog empty
 list.legacy: old format
@@ -97,13 +103,13 @@ list.orphans: No pair in the vault: {names}
 ## Areas
 
 areas.review.heading: Areas
-areas.review.group: **{group}** — notes: {n}, last edit {days} d ago
+areas.review.group: **{group}** — {n|note|notes}, last edit {days|day|days} ago
 areas.review.no_notes: no notes
-areas.review.stale: «{title}» unchanged for {days} d
+areas.review.stale: «{title}» unchanged for {days|day|days}
 
 ## Vault lint
 
-lint.heading: Vault check — {n} notes
+lint.heading: Vault check — {n|note|notes}
 lint.group.breaks: Breaks the vault
 lint.group.schema: Violates the schema
 lint.group.review: Worth a look

@@ -31,15 +31,15 @@ the keyword. Empty `$ARGUMENTS` → ask what to save.
 
 1. **Read `Templates/Resource.md`** from disk, verbatim.
 
-2. **Work out the `type`** — one of the `resource.type.*` strings (`article`, `book`,
-   `video`, `own_thought`). A URL usually settles it; the user's own reasoning with no
-   source is `own_thought`.
+2. **Work out the `type`** — one of the `resource.type.*` strings (`resource.type.article`,
+   `.book`, `.video`, `.own_thought`). A URL usually settles it; the user's own reasoning
+   with no source is `resource.type.own_thought`.
 
 3. **Get the content.**
    - A URL → fetch and read it. If it cannot be fetched (paywall, login), say so and ask
      the user to paste the text rather than writing a summary from the title alone.
    - Pasted text → use it as given.
-   - `own_thought` → the user's own words are the content; there is nothing to fetch.
+   - `resource.type.own_thought` → the user's own words are the content; there is nothing to fetch.
 
 4. **Derive a title** per `note-format.md` — what the thing *says*, not its headline.
    A resource is found later by what it taught, so derive the title from the claim it
@@ -47,7 +47,7 @@ the keyword. Empty `$ARGUMENTS` → ask what to save.
 
 5. **Fill the frontmatter** per the Resource row of the schema in `note-format.md`:
    - `tags` — both `resource/<slug>` and `topic/<slug>`, real slugs, no trailing slash.
-   - `source` — the URL, or the book's author and title. Blank for `own_thought`.
+   - `source` — the URL, or the book's author and title. Blank for `resource.type.own_thought`.
    - `type` — from step 2.
 
 6. **Fill the body:**
@@ -55,7 +55,7 @@ the keyword. Empty `$ARGUMENTS` → ask what to save.
      resource that links to nothing is a resource nobody will find again.
    - the `resource.summary` section — the substance, in `LANG` and in your own words: what it
      claims, on what grounds, what follows. Not a table of contents, not a quote dump.
-     For `own_thought`, this is where the thought itself goes.
+     For `resource.type.own_thought`, this is where the thought itself goes.
    - the `resource.own_thoughts` section — **leave empty.** This section is the user's reaction to the
      material, and writing it for them defeats its purpose. Say in the report that it is
      waiting for them.
@@ -71,7 +71,7 @@ the keyword. Empty `$ARGUMENTS` → ask what to save.
 
 - Thinking *about* someone else's material stays inside that material's note, under
   the `resource.own_thoughts` section — it does not become a separate note. Only a thought
-  that stands on its own becomes a resource of type `own_thought`.
+  that stands on its own becomes a resource of type `resource.type.own_thought`.
 - If the thing is time-bound — a decision, a state of affairs, something true only this
   quarter — it is not a resource. Offer `/inbox add` or the relevant project's `Notes/`.
 - Everything in `LANG`, including the summary of a source in another language.

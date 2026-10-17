@@ -28,8 +28,10 @@ into the wrong vault.
 
 ## Language
 
-`LANG` in `vault.md` (`ru` or `en`) is the language of the vault. Everything a skill
-writes into a note or prints to chat is in that language. Every *fixed* string — section
+`LANG` in `vault.md` is the language of the vault: a code with a file `lang/<LANG>.md`
+and seed templates `templates/<LANG>/` in the plugin (`ru` and `en` ship; a new language
+is those files and needs no skill edits). Everything a skill writes into a note is in
+that language, and so is what it prints to chat. Every *fixed* string — section
 headings, frontmatter vocabulary values, the research-task name, report headings, route
 names, lint finding names — comes from the plugin's `lang/<LANG>.md`, found as
 `../../lang/<LANG>.md` relative to a skill's base directory, the way `../../para/` is.
@@ -39,10 +41,19 @@ names, lint finding names — comes from the plugin's `lang/<LANG>.md`, found as
   there; it never translates a fixed string from memory and never keeps a second copy.
   Placeholders in braces (`{n}`) are filled by the skill.
 - The examples in the plugin's own text are written in English whatever `LANG` is; the
-  output follows `LANG`, not the language of the examples and not the language the user
-  happened to type in.
+  output follows `LANG`, not the language of the examples.
+- **Switching language.** Notes and stored values are always in `LANG`. Chat output is in
+  `LANG` unless the user explicitly asks for another language for that reply, which is
+  honoured for that reply only. The language the user happened to type in is never such a
+  request.
+- **Plural placeholders.** `{n|a|b|c}` stands for `n` followed by a noun form. With three
+  forms (Russian): `a` when `n` mod 10 = 1 and `n` mod 100 ≠ 11; `b` when `n` mod 10 is
+  2–4 and `n` mod 100 is not 12–14; `c` otherwise. With two forms (English): `a` when
+  `n` = 1, `b` otherwise. With three forms, 1, 21 and 101 take `a`; 2, 3 and 4 take `b`; 5–20, 11–14 and 25 take
+  `c`. Other placeholders (`{k}`,
+  `{title}`) are substituted as they are.
 - `vault.md` missing means `LANG` is unknown: the stop message above is said in English.
-  A `LANG` that is not `ru` or `en`, or a missing `lang/<LANG>.md`: stop and say so.
+  A `LANG` whose `lang/<LANG>.md` or `templates/<LANG>/` is missing: stop and say so.
 - Frontmatter keys stay Latin and identical in every language. Machine values (such as
   a task's `status: open | done`) are not localised; vocabulary values (such as a
   resource's `type`) are keys in `lang/<LANG>.md`.

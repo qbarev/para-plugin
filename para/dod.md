@@ -38,7 +38,7 @@ These four say whether the project was *finished*. They do not say whether it wa
 perfectly and still have been the wrong project, and the vault should be able to
 record that.
 
-The other end of that question is asked before the project starts. the `project.value`
+The other end of that question is asked before the project starts. The `project.value`
 section (`note-format.md`) records what the user expected to gain; the
 `project.what_changed` section, written by `/archive`, records what they actually got.
 `/archive` reads the first aloud before

@@ -14,7 +14,7 @@ that rule).
 |---|---|
 | `REPO_ROOT` | *absolute path to the vault root (the directory holding `.obsidian/` and `.claude/`) — no `~`, no relative path* |
 | `PARA_DIR` | *name of the subfolder holding the PARA folders, or `.` when they sit directly in `REPO_ROOT`* |
-| `LANG` | *`ru` or `en` — the language of notes and of what is printed to chat* |
+| `LANG` | *a language code that has `lang/<LANG>.md` in the plugin (`ru`, `en`) — the language of notes and of what is printed to chat* |
 | `TASKS` | *`todoist`, `files` or `mcp` — where tasks live* |
 | `SCHEMA` | *integer, starts at `1` — the vault schema version; a plugin with a higher one asks for a migration* |
 | `IGNORE` | *paths relative to `REPO_ROOT` that PARA never touches, one per line; may be empty* |

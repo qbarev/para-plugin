@@ -41,8 +41,8 @@ Allowed values:
   `GROUPS` in `areas.md`. One vocabulary, two fields: a project belongs to the
   same responsibility an area tracks. With `GROUPING = none` the Area field is absent
   entirely and `area` on a Project is dropped with it.
-- `type` — one of the `resource.type.*` strings (`article`, `book`, `video`,
-  `own_thought`), Resource only. The value is vocabulary, so it is written in the vault's
+- `type` — one of the `resource.type.*` strings (`resource.type.article`, `.book`, `.video`,
+  `resource.type.own_thought`), Resource only. The value is vocabulary, so it is written in the vault's
   language, as `lang/<LANG>.md` spells it. The key `type` itself stays Latin.
 - `tasks_ref` — the backend project id, quoted, Project only (`tasks.md`, «Pairing»).
   Blank until the pair exists; absent when `TASKS = files`. Notes written before this
@@ -139,5 +139,5 @@ vocabulary, and everything you print to chat. Every fixed string — section hea
 `resource.type.*` values, the research-task name, report headings — is the one in
 `lang/<LANG>.md`; the content (titles, the user's words, a summary) is written fresh in
 `LANG`, whatever language the source or the prompt is in. Property keys stay Latin and
-are identical in every language. Switch language only if the user explicitly asks the
-vault to change `LANG`; the language they happened to type in is not such a request.
+are identical in every language. Changing the vault's language means changing `LANG`;
+chat-language requests for a single reply are handled as `paths.md` «Language» says.

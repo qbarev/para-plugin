@@ -27,7 +27,7 @@ The kitchen is renovated and ready to use.
 # Scope of work
 
 
-# Acceptance criteria
+# Definition of Done
 - [ ] The kitchen is accepted
 
 # Links

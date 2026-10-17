@@ -29,7 +29,7 @@ The studio website is published.
 # Scope of work
 
 
-# Acceptance criteria
+# Definition of Done
 - [ ] The website is published
 
 # Links

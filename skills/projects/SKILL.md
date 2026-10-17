@@ -148,7 +148,8 @@ surfaces something worth fixing, say so and let the user decide.
 
 5. **Legacy.** If the overview carries `status` / `priority` / `value` / `estimate`, or
    the folder has a legacy `Tasks/` (`note-format.md`), add one line, the `overview.legacy` string with `{fields}` such as
-   `status, Tasks/ (3)`, naming only what is present. Do not read task notes for
+   `status, Tasks/ (3 files)` (the folder count is the `overview.legacy_tasks`
+   string), naming only what is present. Do not read task notes for
    progress; the migration decides what survives.
 
 6. **Signals** — report only those that fire:
@@ -168,7 +169,7 @@ surfaces something worth fixing, say so and let the user decide.
    ```
    ## PROJ-0001 · Project A
 
-   **{overview.area}** Area A · **{overview.deadline}** 2026-10-31 — 14 d
+   **{overview.area}** Area A · **{overview.deadline}** 2026-10-31 — 14 days
    **{overview.tasks}** {count.scheduled} 3 · {count.overdue} 1 · {count.backlog} 6
    **{overview.acceptance}** ☑☐☐ 1/3
 
@@ -179,11 +180,11 @@ surfaces something worth fixing, say so and let the user decide.
 
    ### {overview.scheduled}
    - **Write the supplier an email** — Tue 10-21, 30 min
-   - **Fill in the form** — overdue by 2 d, 1 h
+   - **Fill in the form** — overdue by 2 days, 1 h
 
    ### {overview.backlog}
    - Book an appointment
-   - {overview.backlog_more} 3
+   - …and 3 more
 
    ### {overview.digest}
    - <A key decision or conclusion from Notes/ — in your own words.>
@@ -193,8 +194,11 @@ surfaces something worth fixing, say so and let the user decide.
    ```
 
    The braces are keys, not literal text: print the string each key stands for.
-   Weekday names and unit abbreviations are `common.weekdays` and `common.unit.*`; an
-   overdue task carries the `task.overdue_by` string. The
+   Dates are the `common.date` format (`2026-10-31`; `10-31` in the short form
+   `common.date_short`, used with a weekday from `common.weekdays` on a task line); the
+   days to the deadline are `common.days`; unit abbreviations are `common.unit.*`; an
+   overdue task carries the `task.overdue_by` string; the backlog tail is the
+   `overview.backlog_more` string (`{n}` = tasks not shown). The
    `overview.backlog` section shows the oldest undated tasks up to the cap in
    `thresholds.md`. Drop any section or field that would be empty. An empty `Results/`
    is a normal state.
@@ -217,7 +221,9 @@ surfaces something worth fixing, say so and let the user decide.
 4. **Order** per `thresholds.md` «Project order».
 
 5. **Render, in `LANG`**, with the `list.*`, `count.*` and `task.unpaired` strings
-   (header `list.header`, deadline `list.until`); shown here with the English strings:
+   (header `list.header`, deadline `list.until` with the date in `common.date_short` and,
+   inside the horizon of `thresholds.md`, ` (14 d)` after it: the days to go and
+   `common.unit.day`); shown here with the English strings:
 
    ```
    **Projects (4)**
