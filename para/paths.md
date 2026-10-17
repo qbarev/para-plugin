@@ -64,7 +64,11 @@ longer in its description. It becomes a note only when `/inbox process` routes i
 PARA folder, and the capture is closed then. No skill ever writes a capture to disk
 (the `files` backend is the one exception, and its adapter says so).
 
-`Inbox/` under `PARA_ROOT` exists for one reason: Obsidian needs a folder to put a file
+**When `TASKS = files`, `Inbox/` is a real inbox:** it is where `inbox.add` writes a
+capture, one task note each, and what `inbox.list` reads (`adapters/files.md`). The
+two paragraphs that follow describe every other backend.
+
+Under every backend but `files`, `Inbox/` under `PARA_ROOT` exists for one reason: Obsidian needs a folder to put a file
 created by hand (`newFileFolderPath`), and the vault is not meant to be edited from
 Obsidian. It is a fallback, never a destination — no skill writes into it, no template
 belongs to it, and anything found there is a stray that `/vault-lint` reports and
@@ -74,7 +78,7 @@ belongs to it, and anything found there is a stray that `/vault-lint` reports an
 
 | What | Path under `PARA_ROOT` |
 |---|---|
-| Obsidian's fallback for new files | `Inbox/` |
+| Obsidian's fallback for new files; the inbox itself when `TASKS = files` | `Inbox/` |
 | Projects | `Projects/` |
 | Areas | `Areas/` |
 | Resources | `Resources/` |
@@ -83,8 +87,10 @@ belongs to it, and anything found there is a stray that `/vault-lint` reports an
 
 Project folder: `Projects/PROJ-xxxx <Название>/`, containing the overview note
 `PROJ-xxxx <Название>.md` plus `Notes/`, `Resources/`, `Results/`. Tasks are not in the
-vault — they are in the paired backend project (`tasks.md`). A `Tasks/` folder in an
-older project is legacy (`note-format.md`).
+overview — they are in the backend project (`tasks.md`); when `TASKS = files` they are
+the notes in the project's own `Tasks/` folder (`adapters/files.md`), created with the
+first task. Under any other backend a `Tasks/` folder in a project is legacy
+(`note-format.md`).
 
 Templates by destination — see `note-format.md` for how to apply them:
 
@@ -94,6 +100,7 @@ Templates by destination — see `note-format.md` for how to apply them:
 | `Areas/` | `Templates/Area.md` |
 | `Resources/` | `Templates/Resource.md` |
 | `<Проект>/Notes/`, `<Проект>/Results/` | `Templates/Note.md` |
+| a task (only when `TASKS = files`) | `Templates/Task.md` |
 
 Service files (dotfiles — Obsidian ignores them, they are not notes):
 

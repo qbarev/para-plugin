@@ -20,9 +20,10 @@ A project is **completed** only when all four hold:
 1. every item in the overview's `# Критерий готовности` is ticked;
 2. `Results/` holds the artifact promised in `# Ожидаемый результат`;
 3. its backend project has no open tasks (`tasks.md`) — each was completed, or
-   deleted because it stopped being needed. An unpaired project with a legacy `Tasks/`
-   folder (`note-format.md`) is checked there instead: no task note left `To Do` or
-   `In progress`;
+   deleted because it stopped being needed. Under `pairing: separate`, an unpaired
+   project with a legacy `Tasks/` folder (`note-format.md`) is checked there instead: no task note left `To Do` or
+   `In progress`. Under `pairing: none` (`TASKS = files`) the project's own `Tasks/` notes
+   are the backend: none left `status: open`;
 4. knowledge that outlives the project (a regulation, a derived principle) has been
    moved into `Areas/` or `Resources/` — only the project itself goes to the
    archive. If the project produced no such knowledge, say so out loud rather than

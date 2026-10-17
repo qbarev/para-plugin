@@ -1,0 +1,28 @@
+schema_version: "1"
+name: files-lint
+description: /para:vault-lint on the TASKS = files fixture; Tasks/ is a normal task folder, not a legacy finding.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:vault-lint"
+  max_turns: 40
+  allowed_tools: [Read, Glob, Grep, Bash]
+runs: 1
+graders:
+  - type: regex
+    name: no-legacy-finding-for-tasks
+    # the legacy-finding shapes: «<project> … Tasks/» and «Tasks/(N)» (prose may still mention the folder)
+    pattern: 'Сайт студии[^\n]*Tasks/|Tasks/\(\d+\)'
+    match: not_contains
+  - type: regex
+    name: no-old-format-finding
+    pattern: 'Старый формат'
+    match: not_contains
+  - type: regex
+    name: no-pairing-finding
+    pattern: 'нет пары в менеджере|Без пары: в хранилище|Пара потеряна|пара потеряна:'
+    match: not_contains
+  - type: regex
+    name: no-breakage-section
+    pattern: '###\s*Ломает хранилище'
+    match: not_contains

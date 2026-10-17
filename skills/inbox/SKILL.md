@@ -10,6 +10,10 @@ The vault's capture buffer is the task backend's inbox, not a folder — `paths.
 that rule and what `Inbox/` on disk is for. A capture leaves the buffer for a proper
 PARA folder once it is clear what it is, or stays in the backend if it is just an action.
 
+Under `TASKS = files` the inbox is the `Inbox/` folder and a capture is a task note in
+it (`paths.md`, `adapters/files.md`); the steps below are unchanged, only the strays
+step is, because every file in `Inbox/` is already a capture.
+
 Every task call is an operation from `tasks.md`, run per the adapter for `TASKS`. If the
 backend is unavailable, `tasks.md` «Backend missing» applies: say so and stop — never
 fall back to writing a file.
@@ -54,7 +58,7 @@ Read only.
 1. **`inbox.list`** — every open capture.
 2. **Print** a numbered list, oldest first, headed
    `**N во Входящих**, самой старой D дн`. Titles only, no descriptions.
-3. **Strays.** List `*.md` in `Inbox/` (filenames only, do not open them). If any exist,
+3. **Strays.** Not under `TASKS = files`, where `inbox.list` already returns them. List `*.md` in `Inbox/` (filenames only, do not open them). If any exist,
    add one line: `В папке Inbox/ ещё K файлов — разберу в /inbox process`.
 4. An empty inbox is a valid, good answer: say so plainly.
 
@@ -66,7 +70,7 @@ The valve on the buffer. Interactive, **one capture at a time** — never dump t
 inbox with proposed destinations and ask the user to approve in bulk.
 
 1. **List the inbox** as above — backend captures first, oldest first, then strays from
-   `Inbox/`. Say how many there are and start with the first.
+   `Inbox/` (none under `TASKS = files`: `inbox.list` has them). Say how many there are and start with the first.
 
 2. **For each capture**: show the title and the content (the description, or the file
    body for a stray) — briefly if it is long. Then give your read of what it is, and

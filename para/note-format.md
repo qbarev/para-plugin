@@ -25,10 +25,11 @@ before this type existed have only `title` and `created`; leave them alone, as w
 
 | Type | Fields |
 |---|---|
-| Project | `title`, `short`, `id`, `tags: [project/<slug>]`, `area`, `deadline`, `tasks_ref`, `created` |
+| Project | `title`, `short`, `id`, `tags: [project/<slug>]`, `area`, `deadline`, `tasks_ref` (only under `pairing: separate`), `created` |
 | Area | `title`, `tags: [area/<slug>]`, plus the grouping field `GROUPING` names in `areas.md` |
 | Resource | `title`, `tags: [resource/<slug>, topic/<slug>]`, `source`, `type` |
 | Note | `title`, `tags: [note]`, `project`, `created` |
+| Task (only when `TASKS = files`) | `title`, `tags: [task]`, `status: open \| done`, `due`, `created` |
 
 Allowed values:
 
@@ -84,7 +85,8 @@ never a second one. Never write the artifact here, and never write the benefit u
 ## Legacy fields
 
 Projects created before tasks moved to a task app carry fields and a folder the schema no
-longer has: `status`, `priority`, `value`, `estimate` in the overview, and a `Tasks/`
+longer has: `status`, `priority`, `value`, `estimate` in the overview, and — unless
+`TASKS = files`, where `Tasks/` is the backend's own folder — a `Tasks/`
 folder of task notes (`tags: [task]`, some also `research`). They are **legacy**: read
 them when reporting, never write or update them, never create them. `/vault-lint`
 lists them as the migration agenda; they are removed only when the project is migrated

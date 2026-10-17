@@ -33,8 +33,8 @@ The first word of `$ARGUMENTS` picks the subcommand: `list`, `create`, `overview
 `task`. If it is none of those, work out which is meant from the phrasing and say which
 you picked. Empty `$ARGUMENTS` → run `list`, then ask what to do.
 
-Every subcommand meets projects that predate the task backend: `status`, `Tasks/`, no
-`tasks_ref` field. Read them as `note-format.md` «Legacy fields» says — report, never
+Every subcommand meets projects that predate the task backend: `status`, `Tasks/` (unless
+`TASKS = files`, where it is the backend's own folder), no `tasks_ref` field. Read them as `note-format.md` «Legacy fields» says — report, never
 rewrite.
 
 ---
@@ -62,10 +62,12 @@ project is and its goal.
    └── Results/
    ```
 
-   All three subfolders, even empty. No `Tasks/`.
+   All three subfolders, even empty. No `Tasks/` (under `TASKS = files` the adapter
+   creates it with the first task).
 
 5. **Fill the frontmatter** per the Project row in `note-format.md`. `created` is today.
-   `deadline` only if the description gives one. `tasks_ref` stays blank until step 7.
+   `deadline` only if the description gives one. `tasks_ref` stays blank until step 7
+   (under `pairing: none` the field is left out).
 
 6. **Fill the body:**
    - `# Цель` — the goal / desired end state. **Required.**
@@ -82,8 +84,9 @@ project is and its goal.
    - `# Ссылки` — wikilinks to clearly related notes, otherwise the template's `-`.
 
 7. **Create the pair** per `tasks.md` «Pairing»: `project.create` with the title and
-   the id. Write the returned `ref` into `tasks_ref:`. If the call fails, say so: the folder stays, unpaired, and
-   `/projects task` will offer to pair it later.
+   the id. Under `pairing: separate`, write the returned `ref` into `tasks_ref:`; if the call fails, say so: the folder stays, unpaired, and
+   `/projects task` will offer to pair it later. Under `pairing: none` there is no pair
+   and no `tasks_ref`: skip the write.
 
 8. **First tasks** in the new project, **without dates**:
    - the research task per `tasks.md` «The research task», **always**, unless the
@@ -143,7 +146,7 @@ surfaces something worth fixing, say so and let the user decide.
    `thresholds.md` — this is where decisions and risks actually live.
 
 5. **Legacy.** If the overview carries `status` / `priority` / `value` / `estimate`, or
-   the folder has `Tasks/`, add one line: `Старый формат: status, Tasks/ (N файлов) —
+   the folder has `Tasks/` and `TASKS` is not `files`, add one line: `Старый формат: status, Tasks/ (N файлов) —
    перенести при груминге`, naming only what is present. Do not read task notes for
    progress; the migration decides what survives.
 
@@ -199,11 +202,11 @@ surfaces something worth fixing, say so and let the user decide.
 1. **Enumerate** the folders directly under `Projects/`. Archived projects are not
    listed — that is `/archive list`.
 
-2. **Read the overview frontmatter**: `id`, `title`, `area`, `deadline`, `tasks_ref`.
+2. **Read the overview frontmatter**: `id`, `title`, `area`, `deadline`, and under `pairing: separate` `tasks_ref`.
    A folder with no frontmatter is pre-convention — print it by folder name with
    `без метаданных`.
 
-3. **Read the tasks** of each paired project (`task.list` with `project_ref`, open), counted per `thresholds.md` «Task counts».
+3. **Read the tasks** of each project that has a `ref` (`task.list` with `project_ref`, open), counted per `thresholds.md` «Task counts».
 
 4. **Order** per `thresholds.md` «Project order».
 
@@ -219,7 +222,7 @@ surfaces something worth fixing, say so and let the user decide.
    ```
 
    - A past deadline: `дедлайн прошёл N дн назад`.
-   - `старый формат` when legacy fields or `Tasks/` are present.
+   - `старый формат` when legacy fields are present, or `Tasks/` is and `TASKS` is not `files`.
    - The last line names backend projects that no overview points at (`project.list` once,
      matched by `ref`; not the inbox, not `AREA_TASK_PROJECTS`). Drop it when empty or
      when the adapter does not support `project.list`.

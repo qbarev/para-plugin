@@ -1,0 +1,36 @@
+schema_version: "1"
+name: files-inbox-add
+description: TASKS = files; /para:inbox add creates exactly one task note in Inbox/ and writes nothing elsewhere.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:inbox add Позвонить в банк"
+  max_turns: 25
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: note-created-in-inbox
+    target: files
+    pattern: 'Second-brain/Inbox/[^/\n]+\.md'
+  - type: regex
+    name: only-one-note
+    target: files
+    pattern: '\.md[\s\S]*\.md'
+    match: not_contains
+  - type: file_exists
+    name: no-project-tasks-folder-created
+    path: "My Drive/files vault/Second-brain/Projects/PROJ-0001 Поездка в горы/Tasks"
+    exists: false
+  - type: file_exists
+    name: no-area-tasks-folder-created
+    path: "My Drive/files vault/Second-brain/Areas/Tasks"
+    exists: false
+  - type: file_exists
+    name: no-notes-in-cwd
+    path: "Second-brain"
+    exists: false
+  - type: regex
+    name: reply-does-not-name-todoist
+    pattern: '[Tt]odoist'
+    match: not_contains

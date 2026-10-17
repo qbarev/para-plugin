@@ -1,0 +1,32 @@
+schema_version: "1"
+name: files-project-task
+description: TASKS = files; /para:projects task creates Tasks/<task>.md in the project folder from Templates/Task.md.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:projects task PROJ-0001 Забронировать хижину на выходные"
+  max_turns: 30
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: note-in-project-tasks-folder
+    target: files
+    pattern: 'Projects/PROJ-0001 Поездка в горы/Tasks/[^/\n]+\.md'
+  - type: regex
+    name: task-written-from-template
+    # the Write call's content: Task.md's frontmatter, open, undated, today's `created`
+    target: trace
+    pattern: '"content":"---\\ntitle: .{1,200}?\\ntags:\\n  - task\\nstatus: open\\ndue:\\ncreated: \d{4}-\d\d-\d\d\\n---'
+  - type: file_exists
+    name: no-inbox-write
+    path: "My Drive/files vault/Second-brain/Inbox"
+    exists: false
+  - type: file_exists
+    name: no-notes-in-cwd
+    path: "Second-brain"
+    exists: false
+  - type: regex
+    name: reply-does-not-name-todoist
+    pattern: '[Tt]odoist'
+    match: not_contains

@@ -2,9 +2,10 @@
 
 Tasks live in the vault's task backend, and only there. The vault keeps what a project
 *means* — goal, criteria, notes, results; the backend keeps what is to be *done* —
-tasks, their durations and dates. A task is never written into a note, and no skill
-keeps a list of tasks in a note: two copies of one task are what this arrangement
-exists to avoid. Read `paths.md` first.
+tasks, their durations and dates. No skill keeps a list of tasks in a note: two copies
+of one task are what this arrangement exists to avoid. (With `TASKS = files` the tasks
+are notes of their own, owned by that adapter — a task there is one note, never a list
+inside another.) Read `paths.md` first.
 
 ## Backend and adapter
 
@@ -16,7 +17,8 @@ it **per the adapter for `TASKS`** (`paths.md` says where the adapter file is).
   only place that names the app.
 - **Backend missing.** If the adapter's tools are not available in this session, say so
   in one line and stop. Never fall back to another backend, and never write a task to
-  disk to make up for it. A skill that only reads tasks and can finish without them
+  disk to make up for it (the `files` adapter is the one backend that is disk, and has
+  nothing to be missing). A skill that only reads tasks and can finish without them
   (a project overview, a lint check) skips that part, says so, and goes on; it never
   reports a project as broken because the backend is unreachable.
 - **Unsupported.** An operation an adapter marks «not supported» is skipped at that
@@ -31,8 +33,9 @@ result carries: `id`, `text`, `description` (may be empty), `duration` (may be e
 decided in one place, `thresholds.md` «Task counts».
 
 Two ways to name where a task lives, **exactly one given, never guessed**:
-`project_ref` — a paired project's `tasks_ref` (see «Pairing»); `area` — a name from
-`AREA_TASK_PROJECTS` in `areas.md`.
+`project_ref` — the project's `ref` (under `pairing: separate` its `tasks_ref`, see
+«Pairing»); `area` — a name from `AREA_TASK_PROJECTS` in `areas.md` (an adapter that
+keeps area tasks in folders reads it as a group name from `GROUPS`, and says so).
 
 | Operation | Input | Result |
 |---|---|---|
@@ -85,7 +88,8 @@ Each adapter declares `pairing:` once, at its top.
   and not required; `ref` is the project folder itself, derived from its path and never
   stored. «Unpaired» does not exist: no «нет пары», no offer to create a pair.
   `project.create`, `project.archive`, `project.restore` and `project.delete` are no-ops
-  (the folder moves are the skills' own).
+  (the folder moves are the skills' own). `project.activity` returns `state: active`
+  while the folder exists and `missing` when it does not; `last_event` is the adapter's.
 
 Lifecycle, both sides together: a project exists while the user means to finish it;
 finished or abandoned, the folder goes to `Archive/` and the backend project is

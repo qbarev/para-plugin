@@ -129,7 +129,8 @@ find "$PARA_ROOT" -mindepth 1 -maxdepth 1 -type d ! -name ".*" \
   ! -name "Archive" ! -name "Templates"
 ```
 
-**Файлы в `Inbox/`.** The folder is Obsidian's fallback, not a destination (`paths.md`);
+**Файлы в `Inbox/`.** Skip under `TASKS = files`: there `Inbox/` is the real inbox and its
+files are open captures (`paths.md`), not findings. Otherwise the folder is Obsidian's fallback, not a destination (`paths.md`);
 whatever sits there was created by hand and is waiting to be routed. Name each file and
 point at `/inbox process`. `--fix` never touches them — routing is a decision.
 
@@ -182,7 +183,8 @@ hardcode a second copy of the allowed list here — read it.
 
 - **Проект без одной из трёх подпапок** — `Notes/`, `Resources/`, `Results/`. Check
   only projects in `Projects/`; archived ones predate the rule. A `Tasks/` folder is
-  not required and not an error here — it is legacy (Group 3).
+  not required and not an error here — it is legacy (Group 3), unless `TASKS = files`,
+  where it is the backend's folder and nothing to report.
 - **`short` или `tasks_ref` не на своём месте** — both belong to a Project overview only
   (`note-format.md`).
 
@@ -210,8 +212,9 @@ hardcode a second copy of the allowed list here — read it.
 Not errors. Report each as a plain list, **with no suggestion to fix** — these are states
 the vault is allowed to be in.
 
-- **Старый формат** — projects in `Projects/` carrying legacy fields or a `Tasks/`
-  folder (`note-format.md` «Legacy fields»). Count first, then one line per project
+- **Старый формат** — projects in `Projects/` carrying legacy fields or, unless
+  `TASKS = files`, a `Tasks/` folder (`note-format.md` «Legacy fields»); under
+  `TASKS = files` drop the `Tasks/` part of the command below. Count first, then one line per project
   naming what it carries. This is the migration agenda, not noise.
 
   ```bash

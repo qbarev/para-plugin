@@ -84,6 +84,14 @@ for op in $ops; do
   done
 done
 
+# Check 7: every adapter declares its pairing model once, as a line `pairing: separate|none`
+# (tasks.md «Pairing»). The generic MCP adapter is exempt: it writes the value per vault.
+for a in para/adapters/*.md; do
+  [ -e "$a" ] || break
+  case "$a" in */mcp-generic.md) continue ;; esac
+  grep -qE '^pairing: (separate|none)$' "$a" || report "missing-pairing: $a does not declare 'pairing: separate' or 'pairing: none'"
+done
+
 # Check 4 (R7): optional denylist of personal terms, one per line, kept outside the repo.
 if [ -z "${PARA_DENYLIST:-}" ]; then
   echo "denylist check skipped (PARA_DENYLIST not set)"

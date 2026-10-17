@@ -39,8 +39,9 @@ that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
      with `project_ref`). If tasks are open, list them and ask once (Tier 1.5)
      what happens to them: complete them, move them to an area project (`task.move` with `area`)
      or leave them inside the archived project. Carry the
-     answer out before going on. An unpaired project with a legacy `Tasks/` folder has
-     no backend side; `dod.md` says how its tasks are checked.
+     answer out before going on. Under `pairing: separate`, an unpaired project with a legacy `Tasks/` folder has
+     no backend side; `dod.md` says how its tasks are checked. Under `pairing: none` the
+     tasks are the project's own `Tasks/` notes and move with the folder.
    - Apply `dod.md` and name every condition that does not hold. That file decides
      whether the outcome is completed or abandoned; do not reproduce its reasoning
      here, and do not soften it.
