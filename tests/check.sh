@@ -56,7 +56,7 @@ done < <(awk '
 # Check 5: planning (sprint, capacity, rhythms) is not part of the plugin (spec section 6).
 while IFS= read -r hit; do
   report "planning: $hit"
-done < <(grep -nEi 'sprint|спринт|capacity|ёмкость|Rhythm|Как я рабо[т]аю|Рабочий график|Calendar' skills/*/SKILL.md para/*.md)
+done < <(grep -nEi 'sprint|спринт|capacity|ёмкость|Rhythm|Как я рабо[т]аю|Рабочий график|Calendar' skills/*/SKILL.md para/*.md) # cyrillic-ok
 
 # Check 6: skills and the base layer speak in operations, not in one task app (spec 5.3).
 # The app is named only in para/adapters/todoist.md (not scanned here), in skill
@@ -96,6 +96,93 @@ for a in para/adapters/*.md; do
   [ -e "$a" ] || break
   case "$a" in */mcp-generic.md) continue ;; esac
   grep -qE '^pairing: (separate|none)$' "$a" || report "missing-pairing: $a does not declare 'pairing: separate' or 'pairing: none'"
+done
+
+# Check 8: the plugin's own text is English. Cyrillic is allowed only in lang/ru.md,
+# templates/ru/, the `description:` line of a skill (the Russian trigger phrases),
+# evals/fixtures/ (synthetic Russian vaults), evals/*/case.yaml (graders and prompts that
+# match Russian output), and the lines of this file tagged with the marker `cyrillic-ok`
+# (check 5's Russian words, which must stay in the pattern). Paths are checked too.
+# BSD grep has no -P: Cyrillic (U+0400-04FF) is UTF-8 lead bytes D0-D3, matched bytewise.
+cyr=$'[\xd0-\xd3]'
+while IFS= read -r -d '' f; do
+  case "$f" in
+    lang/ru.md|templates/ru/*|evals/fixtures/*|evals/*/case.yaml) continue ;;
+  esac
+  [ -f "$f" ] || continue
+  while IFS= read -r hit; do
+    ln=${hit%%:*}; body=${hit#*:}
+    case "$f" in
+      skills/*/SKILL.md) case "$body" in description:*) continue ;; esac ;;
+      tests/check.sh) case "$body" in *cyrillic-ok) continue ;; esac ;;
+    esac
+    report "cyrillic: $f:$ln"
+  done < <(LC_ALL=C grep -nI "$cyr" "$f" 2>/dev/null)
+done < <(git ls-files -z)
+while IFS= read -r -d '' f; do
+  case "$f" in evals/fixtures/*|templates/ru/*|lang/ru.md) continue ;; esac
+  if printf '%s' "$f" | LC_ALL=C grep -q "$cyr"; then report "cyrillic: path $f"; fi
+done < <(git ls-files -z)
+
+# Check 9: lang/ru.md and lang/en.md carry the same keys, each once, none empty.
+# An entry is a line `key: value`; a key is lowercase, dotted.
+keyre='^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+'
+for l in ru en; do
+  [ -f "lang/$l.md" ] || report "lang: lang/$l.md does not exist"
+done
+if [ -f lang/ru.md ] && [ -f lang/en.md ]; then
+  kru=$(grep -oE "$keyre:" lang/ru.md | sort)
+  ken=$(grep -oE "$keyre:" lang/en.md | sort)
+  while IFS= read -r k; do [ -n "$k" ] && report "lang: key '$k' is not in both ru.md and en.md"; done \
+    < <(comm -3 <(printf '%s\n' "$kru") <(printf '%s\n' "$ken") | tr -d '\t')
+  while IFS= read -r k; do [ -n "$k" ] && report "lang: duplicate key '$k' in lang/ru.md"; done < <(printf '%s\n' "$kru" | uniq -d)
+  while IFS= read -r k; do [ -n "$k" ] && report "lang: duplicate key '$k' in lang/en.md"; done < <(printf '%s\n' "$ken" | uniq -d)
+  while IFS= read -r h; do report "lang: empty value $h"; done \
+    < <(grep -nE "$keyre:[[:space:]]*$" lang/ru.md lang/en.md)
+fi
+
+# Check 10: every lang key a skill, base-layer file or config example names exists.
+# A key is a backticked dotted token under one of the lang namespaces. The operation
+# names of tasks.md (`project.create`, `inbox.add` ...) share prefixes with keys and are
+# skipped; `*.md` tokens are files; a token ending in `.*` names a group of keys and
+# needs at least one member.
+nsre='(project|common|area|resource|note|task|count|inbox|archive|overview|list|areas|lint)'
+if [ -f lang/en.md ]; then
+  while IFS=: read -r f ln tok; do
+    tok=${tok//\`/}
+    case "$tok" in *.md) continue ;; esac
+    case " $ops " in *" $tok "*) continue ;; esac
+    if [ "${tok%.\*}" != "$tok" ]; then
+      grep -qE "^${tok%.\*}\." lang/en.md || report "lang-key: $f:$ln names $tok, no such keys in lang/en.md"
+    else
+      grep -qE "^${tok//./\\.}: " lang/en.md || report "lang-key: $f:$ln names $tok, not in lang/en.md"
+    fi
+  done < <(grep -noE "\`${nsre}(\.[a-z0-9_]+)+(\.\*)?\`" skills/*/SKILL.md para/*.md para/adapters/*.md config.example/*.md README.md)
+fi
+
+# Check 11: the seed templates exist for both languages with the same frontmatter keys
+# and the same number of headings, and every section heading a lang key names is in that
+# language's set of templates.
+for t in Project Area Resource Note Task; do
+  for l in ru en; do
+    [ -f "templates/$l/$t.md" ] || report "templates: templates/$l/$t.md does not exist"
+  done
+  if [ -f "templates/ru/$t.md" ] && [ -f "templates/en/$t.md" ]; then
+    fm='/^---$/{n++; next} n==1 && /^[a-z_]+:/ {sub(/:.*/,""); print}'
+    [ "$(awk "$fm" "templates/ru/$t.md")" = "$(awk "$fm" "templates/en/$t.md")" ] \
+      || report "templates: $t.md frontmatter keys differ between ru and en"
+    [ "$(grep -c '^# ' "templates/ru/$t.md")" = "$(grep -c '^# ' "templates/en/$t.md")" ] \
+      || report "templates: $t.md has a different number of headings in ru and en"
+  fi
+done
+for l in ru en; do
+  [ -f "lang/$l.md" ] || continue
+  for k in project.goal project.problem project.value project.expected_result project.scope project.dod common.links \
+           area.current_state area.notes resource.summary resource.own_thoughts note.essence note.open_questions; do
+    v=$(sed -nE "s/^${k//./\\.}: //p" "lang/$l.md")
+    [ -n "$v" ] || continue
+    cat templates/$l/*.md 2>/dev/null | grep -qxF "# $v" || report "templates: no template in templates/$l has the heading '# $v' ($k)"
+  done
 done
 
 # Check 4 (R7): optional denylist of personal terms, one per line, kept outside the repo.
