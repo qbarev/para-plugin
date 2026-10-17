@@ -48,12 +48,21 @@ across `REPO_ROOT`, not merely `PARA_ROOT`; and `.obsidian/app.json` sets
 `newFileFolderPath` to `<PARA_DIR>/Inbox` — the path there is relative to
 `REPO_ROOT` and does not follow this file's convention.
 
-## Inbox is Todoist, not a folder
+## The task backend and its adapter
 
-The capture buffer is the **«Входящие» project in Todoist** (`projectId: "inbox"` in the
-Todoist tools). A capture is a Todoist task: the thought in `content`, anything longer
-in `description`. It becomes a note only when `/inbox process` routes it into a PARA
-folder, and the task is completed then. No skill ever writes a capture to disk.
+Tasks live in the backend `TASKS` names in `vault.md` (`tasks.md` owns what that means).
+Skills run operations **per the adapter for `TASKS`**:
+
+- `TASKS` = `todoist` or `files` → the adapter is `adapters/<TASKS>.md` in the base layer;
+- `TASKS` = `mcp` → the adapter is `<REPO_ROOT>/.claude/para/adapter.md`, in the vault.
+
+## The inbox is the backend's inbox, not a folder
+
+The capture buffer is the task backend's inbox («Входящие»): `inbox.add`, `inbox.list`,
+`inbox.close` in `tasks.md`. A capture is a task: the thought as its text, anything
+longer in its description. It becomes a note only when `/inbox process` routes it into a
+PARA folder, and the capture is closed then. No skill ever writes a capture to disk
+(the `files` backend is the one exception, and its adapter says so).
 
 `Inbox/` under `PARA_ROOT` exists for one reason: Obsidian needs a folder to put a file
 created by hand (`newFileFolderPath`), and the vault is not meant to be edited from
@@ -74,7 +83,7 @@ belongs to it, and anything found there is a stray that `/vault-lint` reports an
 
 Project folder: `Projects/PROJ-xxxx <Название>/`, containing the overview note
 `PROJ-xxxx <Название>.md` plus `Notes/`, `Resources/`, `Results/`. Tasks are not in the
-vault — they are in the paired Todoist project (`todoist.md`). A `Tasks/` folder in an
+vault — they are in the paired backend project (`tasks.md`). A `Tasks/` folder in an
 older project is legacy (`note-format.md`).
 
 Templates by destination — see `note-format.md` for how to apply them:

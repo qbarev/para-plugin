@@ -58,6 +58,32 @@ while IFS= read -r hit; do
   report "planning: $hit"
 done < <(grep -nEi 'sprint|спринт|capacity|ёмкость|Rhythm|Как я рабо[т]аю|Рабочий график|Calendar' skills/*/SKILL.md para/*.md)
 
+# Check 6: skills and the base layer speak in operations, not in one task app (spec 5.3).
+# The app is named only in para/adapters/todoist.md (not scanned here), in skill
+# `description:` lines, in lists of the TASKS values, and where the legacy frontmatter
+# key `todoist` is named next to its replacement `tasks_ref`.
+while IFS= read -r hit; do
+  report "task-app-name: $hit"
+done < <(grep -nE 'todoist|Todoist|mcp__' skills/*/SKILL.md para/*.md \
+           | grep -vE 'SKILL\.md:[0-9]+:description:' \
+           | grep -vE '`todoist`, `files`|`todoist` \| `files`|`todoist` or `files`' \
+           | grep -vE 'todoist.*tasks_ref|tasks_ref.*todoist')
+
+# Check 6b: the contract names the 12 operations and every adapter covers each one.
+ops="inbox.add inbox.list inbox.close project.create project.archive project.restore project.delete task.add task.list task.move project.activity task.label"
+for op in $ops; do
+  if [ -f para/tasks.md ]; then
+    grep -qF "\`$op\`" para/tasks.md || report "missing-operation: para/tasks.md lacks $op"
+  else
+    report "missing-operation: para/tasks.md does not exist"; break
+  fi
+  for a in para/adapters/*.md; do
+    [ -e "$a" ] || { report "missing-operation: no adapter files"; break; }
+    case "$a" in */mcp-generic.md) continue ;; esac
+    grep -qF "\`$op\`" "$a" || report "missing-operation: $a lacks $op"
+  done
+done
+
 # Check 4 (R7): optional denylist of personal terms, one per line, kept outside the repo.
 if [ -z "${PARA_DENYLIST:-}" ]; then
   echo "denylist check skipped (PARA_DENYLIST not set)"

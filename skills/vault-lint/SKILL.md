@@ -22,7 +22,7 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 - `../../para/note-format.md` — the frontmatter schema and allowed values
 - `../../para/project-id.md` — the id invariant
 - `../../para/confirm.md` — `--fix` edits notes, so Tier 2 applies
-- `../../para/todoist.md` — pairing between `Projects/` and Todoist, area projects
+- `../../para/tasks.md` — the operations; pairing between `Projects/` and the task backend, area projects
 
 Set `REPO_ROOT` and `PARA_ROOT` from `paths.md` before running anything below, and
 `export LC_ALL=C` in the same shell. Under a Russian UTF-8 locale `sort` and `uniq`
@@ -183,24 +183,24 @@ hardcode a second copy of the allowed list here — read it.
 - **Проект без одной из трёх подпапок** — `Notes/`, `Resources/`, `Results/`. Check
   only projects in `Projects/`; archived ones predate the rule. A `Tasks/` folder is
   not required and not an error here — it is legacy (Group 3).
-- **`short` или `todoist` не на своём месте** — both belong to a Project overview only
+- **`short` или `tasks_ref` не на своём месте** — both belong to a Project overview only
   (`note-format.md`).
 
   ```bash
-  grep -rlE '^(short|todoist):' "$PARA_ROOT" --include="*.md" --exclude-dir=Templates \
+  grep -rlE '^(short|tasks_ref|todoist):' "$PARA_ROOT" --include="*.md" --exclude-dir=Templates \
     | grep -vE '/(Projects|Archive)/[^/]+/[^/]+\.md$'
   ```
 
-- **Пара с Todoist** — per `todoist.md` «Pairing». Read `find-projects`
-  (`archivedStatus: all`) once, then for every overview in `Projects/` with a non-blank
-  `todoist`:
-  - no Todoist project with that id → «пара потеряна»;
-  - the Todoist project is archived while the folder is in `Projects/` → «в Todoist
-    закрыт, в хранилище нет» — offer `/archive`, never move it here;
-  - the same id on two overviews → name both.
+- **Пара с менеджером задач** — per `tasks.md` «Pairing». For every overview in
+  `Projects/` with a non-blank `tasks_ref`, read `project.activity` and use its `state`:
+  - `missing` → «пара потеряна»;
+  - `archived` while the folder is in `Projects/` → «в менеджере задач закрыт, в
+    хранилище нет» — offer `/archive`, never move it here;
+  - the same id on two overviews → name both (a file check, no call needed).
 
-  If the Todoist tools are unavailable, say so in one line and skip this check — never
-  report every project as broken.
+  If the backend is unavailable or the adapter marks `project.activity` «not
+  supported», say so in one line and skip this check — never report every project as
+  broken (`tasks.md` «Backend missing»).
 
 ---
 
@@ -229,11 +229,11 @@ the vault is allowed to be in.
     [ -f "${f% 2.md}.md" ] && echo "$f"; done
   ```
 
-- **Без пары** — two lists. Projects in `Projects/` with a blank or missing `todoist`.
-  Active Todoist projects that no overview in `Projects/` or `Archive/` points at and
-  that are neither the inbox (`inboxProject: true`) nor named in
-  `AREA_TASK_PROJECTS` (`areas.md`). An archived Todoist project paired with
-  an overview in `Archive/` is the normal closed state, not a finding.
+- **Без пары** — projects in `Projects/` with a blank or missing `tasks_ref`. (Backend
+  projects that no overview points at are not listed: the contract has no operation
+  that lists a backend's projects.)
+- **Старое имя поля** — overviews carrying `todoist:` where `tasks_ref:` is now
+  expected (`note-format.md`). Count and names; renaming is the user's call.
 
 - **Заметки-сироты** — nothing anywhere links to them, so they are reachable only by
   search. Expected for a fresh project note; interesting for an old resource.
@@ -276,11 +276,11 @@ a clean vault should print three short lines, not a wall of ✓.
 - `Projects/PROJ-0002 Проект Б/PROJ-0002 Проект Б.md` — `deadline: 15.06.2026`,
   ожидается YYYY-MM-DD
 - `Projects/PROJ-0003 Проект В/PROJ-0003 Проект В.md` — пара потеряна: проекта
-  Todoist с id `abcd…` нет
+  в менеджере задач с id `abcd…` нет
 
 ### Стоит посмотреть
 - Старый формат: 3 проекта — PROJ-0008 (status, priority, value, estimate, Tasks/(7)), …
-- Без пары: в хранилище 3, в Todoist 1 («Проект Д»)
+- Без пары: 3 проекта в хранилище
 - Сирот: 12 (из них 1 в Archive — это нормально)
 - Без frontmatter: 8, все в `Resources/<Тема>/` и `Archive/`
 ```
@@ -298,7 +298,7 @@ Only the repairs with exactly one correct answer:
 - missing project subfolders — create the empty folder
 
 Everything else is reported, never fixed: a duplicate basename needs a naming decision,
-a dangling link needs to know whether the target was renamed or dropped, a lost Todoist
+a dangling link needs to know whether the target was renamed or dropped, a lost backend
 pair needs to know which side is right, and legacy fields are removed only in the
 migration with the user.
 

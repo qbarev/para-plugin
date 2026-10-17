@@ -6,19 +6,20 @@ argument-hint: add <текст> | list | process
 
 # Inbox
 
-The vault's capture buffer is **Todoist «Входящие»**, not a folder — `paths.md` owns
+The vault's capture buffer is the task backend's inbox, not a folder — `paths.md` owns
 that rule and what `Inbox/` on disk is for. A capture leaves the buffer for a proper
-PARA folder once it is clear what it is, or stays in Todoist if it is just an action.
+PARA folder once it is clear what it is, or stays in the backend if it is just an action.
 
-All Todoist calls go through the Todoist MCP tools; the inbox is `projectId: "inbox"`.
-If the tools are unavailable, say so and stop — never fall back to writing a file.
+Every task call is an operation from `tasks.md`, run per the adapter for `TASKS`. If the
+backend is unavailable, `tasks.md` «Backend missing» applies: say so and stop — never
+fall back to writing a file.
 
 ## Base layer
 
 Read before acting, each as `../../para/<file>.md` relative to this skill's base directory — these hold the shared rules, do not restate them from memory:
 
 - `../../para/paths.md` — always
-- `../../para/todoist.md` — for `process`: what a task is, area projects, moving a task
+- `../../para/tasks.md` — always: the operations; for `process` also what a task is, area projects
 - `../../para/note-format.md` — for `process`
 - `../../para/confirm.md` — for `process`
 - `../../para/move.md` — for `process`, when it routes a stray file out of `Inbox/`
@@ -34,10 +35,9 @@ and ask.
 
 ### `add <текст>` — capture
 
-1. **Create one task** in `projectId: "inbox"` with `add-tasks`. A short text goes into
-   `content` as given. A long one gets a short Russian `content` derived from it
-   (6 words or fewer) and the full text verbatim in `description`.
-2. **Set nothing else** — no due date, priority or labels unless the user said them.
+1. **`inbox.add`** with the text. A long text goes in as the description, with a short
+   Russian title derived from it (6 words or fewer).
+2. **Set nothing else** — no date, priority or labels unless the user said them.
    This is a buffer, not a place to tidy the user's thought into shape.
 3. **Report** in one line what was created, so the user can rename if they disagree.
 
@@ -50,10 +50,9 @@ If the capture obviously belongs somewhere specific, say so in the report and of
 
 Read only.
 
-1. **Fetch** every task in `projectId: "inbox"` with `find-tasks`, following `cursor`
-   until it is exhausted.
-2. **Print** a numbered list, oldest first by `addedAt`, headed
-   `**N во Входящих**, самой старой D дн`. Titles only (`content`), no descriptions.
+1. **`inbox.list`** — every open capture.
+2. **Print** a numbered list, oldest first, headed
+   `**N во Входящих**, самой старой D дн`. Titles only, no descriptions.
 3. **Strays.** List `*.md` in `Inbox/` (filenames only, do not open them). If any exist,
    add one line: `В папке Inbox/ ещё K файлов — разберу в /inbox process`.
 4. An empty inbox is a valid, good answer: say so plainly.
@@ -65,16 +64,16 @@ Read only.
 The valve on the buffer. Interactive, **one capture at a time** — never dump the whole
 inbox with proposed destinations and ask the user to approve in bulk.
 
-1. **List the inbox** as above — Todoist tasks first, oldest first, then strays from
+1. **List the inbox** as above — backend captures first, oldest first, then strays from
    `Inbox/`. Say how many there are and start with the first.
 
-2. **For each capture**: show the title and the content (`description`, or the file
+2. **For each capture**: show the title and the content (the description, or the file
    body for a stray) — briefly if it is long. Then give your read of what it is, and
    offer the routes:
 
    | Route | What happens |
    |---|---|
-   | Действие | a to-do outside any project → move it to an area project (`AREA_TASK_PROJECTS` in `areas.md`) the user picks; wording checked per `todoist.md` «What a task is», a rewording proposed before the move |
+   | Действие | a to-do outside any project → move it to an area project (`AREA_TASK_PROJECTS` in `areas.md`) the user picks; wording checked per `tasks.md` «What a task is», a rewording proposed before the move |
    | Задача проекта | a step of an existing project → `/projects task <проект> <задача>`, then complete the capture |
    | Проект | an effort with an end state → hand off to `/projects create` |
    | Область | ongoing responsibility → `/areas create`, or append to an existing Area |
@@ -89,15 +88,14 @@ inbox with proposed destinations and ask the user to approve in bulk.
 
 4. **Close the capture** once its route is carried out:
 
-   - **Todoist task** — routed into the vault, turned into a project task, or junk →
-     `complete-tasks`. Completing is reversible, so it is Tier 1 (`confirm.md`); never
-     `delete-object`. **Действие** moves the task itself (`update-tasks` with the area
-     project's `projectId`, per `todoist.md` «Writing to Todoist») and leaves it open;
+   - **Backend capture** — routed into the vault, turned into a project task, or junk →
+     `inbox.close`. Closing is reversible, so it is Tier 1 (`confirm.md`). **Действие**
+     moves the task itself (`task.move` to the area project) and leaves it open;
      **Оставить** leaves it where it is.
    - **Stray file** in `Inbox/` — after `/projects create`, `/areas create` or
      `/resources create` has taken its content, remove the file via `/remove`; for
-     **Удалить**, hand it to `/remove` directly. **Действие** turns it into a Todoist
-     task with `add-tasks` in the chosen area project, then remove the file the same way.
+     **Удалить**, hand it to `/remove` directly. **Действие** turns it into a task
+     with `task.add` in the chosen area project, then remove the file the same way.
 
 5. **Then go to the next capture.** Do not batch the closing to the end.
 
@@ -108,4 +106,4 @@ inbox with proposed destinations and ask the user to approve in bulk.
 
 - The inbox is deliberately low-friction: `add` never asks a question it can avoid.
   `process` is where the thinking happens.
-- Everything in Russian, Todoist tasks included.
+- Everything in Russian, tasks included.

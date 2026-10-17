@@ -21,7 +21,7 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 - `../../para/confirm.md` — this skill is Tier 2 throughout
 - `../../para/move.md` — backlinks and the `trash` command
 - `../../para/project-id.md` — when the target is a project
-- `../../para/todoist.md` — when the target is a paired project
+- `../../para/tasks.md` — when the target is a paired project: the operations, pairing
 
 ## Input
 
@@ -46,18 +46,18 @@ before touching any files.
    - That it goes to the **macOS Trash** and is recoverable from there.
    - If it is a project: its `id` is being retired. Say which id, and that it will be
      written to `Archive/.removed-ids` so it is never handed to another project.
-   - If it is a project with `todoist:` set: its Todoist project and the open tasks in it
-     (count them). Ask in the same question whether to delete the Todoist project
-     (`delete-object`) or archive it (`project-management`) — leaving it alive makes it
-     an orphan (`todoist.md` «Pairing»).
+   - If it is a project with `tasks_ref:` set: its backend project and the open tasks in it
+     (`task.list`, count them). Ask in the same question whether to delete the backend
+     project (`project.delete`) or archive it (`project.archive`) — leaving it alive makes
+     it an orphan (`tasks.md` «Pairing»).
 
    The original "удали X" is not this confirmation. Ask anyway.
 
 4. **Remove**, once confirmed, per the Deleting section of `move.md` — that file owns
    the `trash`-not-`rm` policy and what to do when `trash` is unavailable.
 
-5. **If it was a paired project, handle the Todoist side** as the user chose in step 3.
-   If the call fails, say so: the folder is gone and the Todoist project is now unpaired.
+5. **If it was a paired project, handle the backend side** as the user chose in step 3.
+   If the call fails, say so: the folder is gone and the backend project is now unpaired.
 
 6. **If it was a project, retire its id.** Append one line to
    `Archive/.removed-ids` in the format `project-id.md` specifies, using today's
@@ -69,7 +69,7 @@ before touching any files.
    again before touching them.
 
 8. **Report**: what was removed, that it is in the Trash, the retired id if any, what
-   happened to the Todoist project, and how each backlink was resolved.
+   happened to the backend project, and how each backlink was resolved.
 
 ## Notes
 

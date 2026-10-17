@@ -38,7 +38,7 @@ answer at all; see `confirm.md`, Tier 2.
 
 A plain filesystem move. Move a project as a whole folder — its internal structure
 is preserved untouched, and `project:` backlinks in its notes keep resolving because the
-overview's filename does not change. Its Todoist project is not touched by a move;
+overview's filename does not change. Its backend project is not touched by a move;
 `/archive` handles that side.
 
 ```bash

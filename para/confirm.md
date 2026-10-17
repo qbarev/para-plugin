@@ -5,14 +5,14 @@ the user can undo it, not on how big it feels.
 
 ## Tier 1 — reversible: announce, then proceed
 
-Creating a note, adding a Todoist task or project, archiving, restoring, moving,
+Creating a note, adding a task or a backend project, archiving, restoring, moving,
 editing a frontmatter field. The user can undo any of these by hand in seconds.
 
 State what you found and what you are about to do, then **do it without waiting**.
 Announcing exists so a wrong target gets caught, not to collect permission:
 
 > Нашёл `Projects/PROJ-0003 Проект В/`. Переношу в `Archive/`,
-> архивирую его проект в Todoist.
+> архивирую его проект в менеджере задач.
 
 Do not ask "продолжать?" here. A question on every reversible action trains the user
 to answer yes without reading, which is exactly how the wrong file gets archived.

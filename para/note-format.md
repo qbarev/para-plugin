@@ -20,12 +20,12 @@ matches it too.
 
 **Note** is the working note inside a project — `<Проект>/Notes/` and `<Проект>/Results/`.
 It carries no `status`, `due` or `estimate` in its frontmatter: it is thinking, not
-work to be tracked — the work is in Todoist (`todoist.md`). Notes written before this type existed have only `title` and
-`created`; leave them alone, as with any pre-convention note.
+work to be tracked — the work is in the task backend (`tasks.md`). Notes written
+before this type existed have only `title` and `created`; leave them alone, as with any pre-convention note.
 
 | Type | Fields |
 |---|---|
-| Project | `title`, `short`, `id`, `tags: [project/<slug>]`, `area`, `deadline`, `todoist`, `created` |
+| Project | `title`, `short`, `id`, `tags: [project/<slug>]`, `area`, `deadline`, `tasks_ref`, `created` |
 | Area | `title`, `tags: [area/<slug>]`, plus the grouping field `GROUPING` names in `areas.md` |
 | Resource | `title`, `tags: [resource/<slug>, topic/<slug>]`, `source`, `type` |
 | Note | `title`, `tags: [note]`, `project`, `created` |
@@ -37,8 +37,10 @@ Allowed values:
   same responsibility an area tracks. With `GROUPING = none` the Area field is absent
   entirely and `area` on a Project is dropped with it.
 - `type` — `статья` / `книга` / `видео` / `своя мысль`, Resource only.
-- `todoist` — the Todoist project id, quoted, Project only (`todoist.md`, «Pairing»).
-  Blank until the pair exists.
+- `tasks_ref` — the backend project id, quoted, Project only (`tasks.md`, «Pairing»).
+  Blank until the pair exists; absent when `TASKS = files`. Notes written before this
+  field was renamed carry `todoist` with the same meaning: read it as `tasks_ref`, and
+  `/vault-lint` reports it.
 
 ## Filling fields
 
@@ -70,7 +72,7 @@ They answer different questions, and the archive adds a fourth that answers back
 | `# Цель` | what the world looks like when the project is done |
 | `# Ценность` | **what the user gains from that** — measurable where possible (hours, money, a date, a count), and unambiguous where not: «−5 часов ревью в неделю», «гарантия действует 2 года» |
 | `# Ожидаемый результат` | which artifacts appear and where they live (`dod.md`) |
-| `# Скоуп работ` | which work items lead there — written by the research task (`todoist.md`), each item becoming Todoist tasks; empty until then |
+| `# Скоуп работ` | which work items lead there — written by the research task (`tasks.md`), each item becoming tasks; empty until then |
 | `# Что изменилось` | written at archiving: what was actually gained — the answer to `# Ценность` |
 
 `# Ценность` sits between `# Проблема` and `# Ожидаемый результат` in
@@ -81,7 +83,7 @@ never a second one. Never write the artifact here, and never write the benefit u
 
 ## Legacy fields
 
-Projects created before tasks moved to Todoist carry fields and a folder the schema no
+Projects created before tasks moved to a task app carry fields and a folder the schema no
 longer has: `status`, `priority`, `value`, `estimate` in the overview, and a `Tasks/`
 folder of task notes (`tags: [task]`, some also `research`). They are **legacy**: read
 them when reporting, never write or update them, never create them. `/vault-lint`

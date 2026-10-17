@@ -7,7 +7,7 @@ argument-hint: create <ссылка или текст>
 # Resources
 
 Reference material and evergreen knowledge: articles, books, videos, and the user's own
-matured thoughts. What separates a resource from a capture in the Todoist inbox is durability — a
+matured thoughts. What separates a resource from a capture in the task inbox is durability — a
 resource is something worth rereading in a year, not a note about today.
 
 Resources are grouped by topic in nested folders (`Resources/<Тема>/<Подтема>/`).

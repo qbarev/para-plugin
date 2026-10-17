@@ -8,7 +8,7 @@ argument-hint: <что> | list | restore <что>
 
 The `Archive/` area of the vault: everything finished or shelved goes here, and
 archiving is always a move — never a deletion. Permanent deletion is `/remove`. A
-project's Todoist pair is archived and restored together with its folder.
+project's backend pair is archived and restored together with its folder.
 
 ## Base layer
 
@@ -19,7 +19,7 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 - `../../para/move.md` — always
 - `../../para/confirm.md` — always
 - `../../para/dod.md` — when the target is a project
-- `../../para/todoist.md` — when the target is a project: pairing, area projects
+- `../../para/tasks.md` — when the target is a project: the operations, pairing, area projects
 - `../../para/note-format.md` — when editing frontmatter; «Legacy fields»
 
 ## Subcommands
@@ -35,12 +35,12 @@ that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
 1. **Find the target** per `find-target.md`, operation "Archive".
 
 2. **If the target is a project:**
-   - **Open tasks first.** Read the paired Todoist project (`find-tasks` with the
-     overview's `todoist` id). If tasks are open, list them and ask once (Tier 1.5)
+   - **Open tasks first.** Read the paired project's tasks (`task.list`, open,
+     with the overview's `tasks_ref`). If tasks are open, list them and ask once (Tier 1.5)
      what happens to them: complete them, move them to an area project
-     (`AREA_TASK_PROJECTS`), or leave them inside the archived project. Carry the
+     (`AREA_TASK_PROJECTS`), or leave them inside the archived project (`task.move` moves one). Carry the
      answer out before going on. An unpaired project with a legacy `Tasks/` folder has
-     no Todoist side; `dod.md` says how its tasks are checked.
+     no backend side; `dod.md` says how its tasks are checked.
    - Apply `dod.md` and name every condition that does not hold. That file decides
      whether the outcome is completed or abandoned; do not reproduce its reasoning
      here, and do not soften it.
@@ -48,8 +48,8 @@ that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
      `Projects/PROJ-xxxx <title>/` to `Archive/PROJ-xxxx <title>/`. The name stays
      exactly as it is: the id stays with the project for life, and id issuance scans
      `Archive/` to keep it reserved (`project-id.md`).
-   - Archive the Todoist project (`project-management`, archive) when paired. Keep
-     `todoist:` in the overview — restore needs it.
+   - `project.archive` when paired. Keep
+     `tasks_ref:` in the overview — restore needs it.
    - Legacy fields (`status` and the rest) are left exactly as they are
      (`note-format.md`): an archived project keeps its history.
 
@@ -59,7 +59,7 @@ that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
      (Tier 1.5) — it usually means the note is stale, not that the responsibility ended.
    - A legacy task note inside a project that is *not* being archived: moving it breaks
      nothing useful and is probably not what was meant — ask (Tier 1.5). Tasks are
-     closed in Todoist now.
+     closed in the backend now.
 
 4. **Check the basename for collisions** before moving (`move.md`, `note-format.md`).
    A duplicate makes every link to that name ambiguous — Tier 1.5, ask rather than move.
@@ -85,7 +85,7 @@ that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
    was skipped. Never invent the rest.
 
 6. **Report**: what moved, its new path, the outcome line, what happened to open tasks,
-   whether the Todoist project was archived, any warning.
+   whether the backend project was archived, any warning.
 
 ---
 
@@ -126,12 +126,12 @@ opens with the user's own words, as in projects archived before this rule — pr
    convention, ask where it belongs. Nothing is restored into `Inbox/` — it is not a
    destination (`paths.md`).
 3. **Check the basename for collisions** as above, then move.
-4. **The Todoist side — projects only.** With `todoist:` set, unarchive that Todoist
-   project. Without it, offer to create the pair (`todoist.md` «Pairing»); on yes, add
-   a `todoist:` key and fill it. Leave ticked checkboxes in `# Критерий готовности` and
+4. **The task side — projects only.** With `tasks_ref:` set, `project.restore`. Without
+   it, offer to create the pair (`tasks.md` «Pairing»); on yes, `project.create`, add
+   a `tasks_ref:` key and fill it. Leave ticked checkboxes in `# Критерий готовности` and
    the `# Что изменилось` section as they are — editing them is Tier 2 and rarely
    wanted.
-5. **Report**: what came back, to where, and the state of its Todoist pair.
+5. **Report**: what came back, to where, and the state of its backend pair.
 
 ## Notes
 

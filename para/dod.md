@@ -19,7 +19,7 @@ A project is **completed** only when all four hold:
 
 1. every item in the overview's `# Критерий готовности` is ticked;
 2. `Results/` holds the artifact promised in `# Ожидаемый результат`;
-3. its Todoist project has no open tasks (`todoist.md`) — each was completed, or
+3. its backend project has no open tasks (`tasks.md`) — each was completed, or
    deleted because it stopped being needed. An unpaired project with a legacy `Tasks/`
    folder (`note-format.md`) is checked there instead: no task note left `To Do` or
    `In progress`;
