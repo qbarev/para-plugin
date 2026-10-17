@@ -1,0 +1,32 @@
+schema_version: "1"
+name: init-a-interrupted
+tags: [init-core]
+description: A first /para:init that stopped after writing areas.md (no vault.md) is not the old embedded layout (C); init carries on as scenario A, keeps areas.md, and writes the rest. Config writes are graded from the attempted write (the eval child may not write into .claude/).
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:init Answers in advance: language en; PARA_DIR: the default; tasks: files; Areas are not grouped (GROUPING none). The plan is approved in advance: show it, then apply it without waiting."
+  max_turns: 60
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: not-scenario-c
+    pattern: 'not (yet )?supported|[Ss]cenario C'
+    match: not_contains
+  - type: file_exists
+    name: templates-written
+    path: "PARA/Templates/Project.md"
+  - type: regex
+    name: vault-md-attempted
+    target: trace
+    pattern: '"name":"(Bash|Write)","input":\{[^\n]*?\.claude/para/vault\.md[^\n]*?\| `PARA_DIR` \| `PARA` \|[^\n]*?\| `TASKS` \| `files` \|'
+  - type: regex
+    name: areas-md-not-rewritten
+    target: trace
+    pattern: '"name":"(Bash|Write|Edit)","input":\{[^\n]*?\.claude/para/areas\.md[^\n]*?GROUPING'
+    match: not_contains
+  - type: regex
+    name: areas-md-kept
+    target: { source: file, path: ".claude/para/areas.md" }
+    pattern: '\| `GROUPING` \| `none` \|'

@@ -13,12 +13,16 @@ report() { echo "$1"; fail=1; }
 # cannot hide an old one.
 while IFS= read -r hit; do
   report "old-location: $hit"
-done < <(grep -noE '\.claude/para/([A-Za-z0-9_.-]*)' skills/*/SKILL.md para/*.md \
+# init detects the old layout by name: its lines carrying the marker `old-layout` are exempt.
+done < <(grep -nE '\.claude/para/' skills/*/SKILL.md para/*.md | grep -vE '^skills/init/SKILL\.md:[0-9]+:.*old-layout' \
+           | grep -oE '^[^:]+:[0-9]+:|\.claude/para/([A-Za-z0-9_.-]*)' \
+           | awk '/:$/{f=$0; next} {print f $0}' \
            | grep -vE '\.claude/para/(vault|areas|adapter)\.md$' \
            | grep -vE '\.claude/para/$' )
 while IFS= read -r hit; do
   report "old-location (local/): $hit"
-done < <(grep -nE 'local\.example|local/|roots\.md|TODOIST_AREA_PROJECTS' skills/*/SKILL.md para/*.md)
+done < <(grep -nE 'local\.example|local/|roots\.md|TODOIST_AREA_PROJECTS' skills/*/SKILL.md para/*.md \
+           | grep -vE '^skills/init/SKILL\.md:[0-9]+:.*old-layout')
 
 # Check 2: every ../../para/X.md reference in a skill resolves to an existing file.
 for f in skills/*/SKILL.md; do

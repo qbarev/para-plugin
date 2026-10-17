@@ -22,7 +22,7 @@ defines them.
 | the note templates | `PARA_ROOT/Templates/` | seeded from the plugin, only when missing («Templates») |
 | vault config | `REPO_ROOT/.claude/para/vault.md`, `areas.md`; `adapter.md` only when `TASKS` is `mcp` | from `config.example/`; never overwritten |
 | the plugin's block | `REPO_ROOT/CLAUDE.md` | between the markers only («CLAUDE.md») |
-| read-only permissions | `REPO_ROOT/.claude/settings.json` | merged, never replaced («Settings») |
+| the skills' permissions | `REPO_ROOT/.claude/settings.json` | merged, never replaced («Settings») |
 | Obsidian settings | `REPO_ROOT/.obsidian/app.json`, `templates.json` | merged («Obsidian») |
 
 ## Base layer
@@ -86,9 +86,15 @@ Read-only. Find out what the folder is and name the scenario.
 REPO_ROOT=$(pwd)
 ls -A "$REPO_ROOT"
 ls "$REPO_ROOT/.claude" "$REPO_ROOT/.claude/para" "$REPO_ROOT/.claude/skills" 2>/dev/null
-# notes: every .md outside dot-folders, except the repository's own files and templates
-find "$REPO_ROOT" -name "*.md" -not -path "*/.*" -not -path "*/Templates/*" \
-  ! -path "$REPO_ROOT/CLAUDE.md" ! -path "$REPO_ROOT/README.md" ! -path "$REPO_ROOT/CHANGELOG.md" | head -50
+# the old embedded layout (scenario C): its config folder, its base layer, its skills
+ls -d "$REPO_ROOT/.claude/para/local" "$REPO_ROOT/.claude/para/paths.md" 2>/dev/null   # old-layout
+for s in inbox projects areas resources archive remove vault-lint; do
+  [ -f "$REPO_ROOT/.claude/skills/$s/SKILL.md" ] && echo "old skill: $s"; done
+# notes: every .md not under a dot-entry of REPO_ROOT, except the repository's own files
+# and templates (dot-entries are pruned relative to REPO_ROOT, so a vault that itself
+# lives under a dot-directory is still seen)
+find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -name "*.md" -not -path "*/Templates/*" \
+  ! -path "$REPO_ROOT/CLAUDE.md" ! -path "$REPO_ROOT/README.md" ! -path "$REPO_ROOT/CHANGELOG.md" -print | head -50
 # a vault above this folder: init was started in a subfolder
 d=$(dirname "$REPO_ROOT")
 while [ "$d" != "/" ] && [ "$d" != "$HOME" ]; do
@@ -106,10 +112,16 @@ Stop before anything else when:
 Then decide, **in this order**, and say what was found and which case it is:
 
 1. **Set up** — `.claude/para/vault.md` exists → «Re-run and migration» below.
-2. **Scenario C** — the old embedded tooling: a `.claude/para/` folder without
-   `vault.md` (the old base layer and its config), or PARA skills in `.claude/skills/`
-   (folders named `inbox`, `projects`, `areas`, `resources`, `archive`, `remove`,
+2. **Scenario C** — the old embedded tooling, recognised by its own layout only (the
+   `old-layout` lines above): its config folder `local/` or its base layer file
+   `paths.md` inside `.claude/para/`, or a `SKILL.md` of a PARA skill in
+   `.claude/skills/` (`inbox`, `projects`, `areas`, `resources`, `archive`, `remove`,
    `vault-lint`). → «Scenario C».
+   A `.claude/para/` holding only this plugin's config files (`areas.md`, `adapter.md`)
+   and no `vault.md` is **not** C: it is a first run of `init` that was interrupted or
+   refused before `vault.md`. Go on to B or A below as if it were not there, except that
+   those files are the vault's config — never overwritten — and a question they already
+   answer (question 4 for `areas.md`) is not asked again. The run fills in the rest.
 3. **Scenario B** — notes were found (the `find` above printed anything). →
    «Scenario B».
 4. **Scenario A** — otherwise: an empty folder, or one holding only non-note files
@@ -226,12 +238,13 @@ backticks** — ``| `LANG` | `en` |`` — and an empty value leaves the cell emp
 items separated by commas. `REPO_ROOT` is the absolute path, no `~`. `SCHEMA` is the
 current one from `migrations.md`.
 
-A step that fails is reported as it is, and the steps after it still run. `vault.md` is
-withheld only when a PARA folder or a template could not be written — without them the
-vault is not there. Any other failure (`areas.md`, `adapter.md`, a merge into
-`CLAUDE.md`, `.claude/settings.json` or `.obsidian/`) does not hold it back: the report
-names it, the skills stop on a missing `areas.md` or `adapter.md` by themselves, and the
-next run fills the gap. Writes into `.claude/` may need the user's permission; a
+A step that fails is reported as it is, and the steps after it still run. When a PARA
+folder or a template could not be written, the vault is not there: **skip `areas.md`,
+`adapter.md` and `vault.md`** (no config without a vault), report it, and the next run
+starts over as a first run. Any other failure (`areas.md`, `adapter.md`, a merge into
+`CLAUDE.md`, `.claude/settings.json` or `.obsidian/`) does not hold `vault.md` back: the
+report names it, the skills stop on a missing `areas.md` or `adapter.md` by themselves,
+and the next run fills the gap. Writes into `.claude/` may need the user's permission; a
 refusal is a failure like any other, reported and never worked around.
 
 ## Step 6 — Report
@@ -268,7 +281,8 @@ Nothing else in a template changes.
 
 `.obsidian/` sits in `REPO_ROOT` (`paths.md`). Merge — read the file, set only the keys
 below, keep every other key and value, write valid JSON; create the file (and the
-folder) when missing:
+folder) when missing. A file that is not plain JSON (comments, trailing commas, a
+syntax error) is not touched: report it, as with unbalanced `CLAUDE.md` markers.
 
 | File | Key | Value |
 |---|---|---|
@@ -284,9 +298,11 @@ from Obsidian land elsewhere; links stop updating on rename).
 
 ### Settings
 
-Merge into `REPO_ROOT/.claude/settings.json` — never replace it. Add each of these to
+Merge into `REPO_ROOT/.claude/settings.json` — never replace it; a file that is not
+plain JSON is not touched and is reported, as in «Obsidian». Add each of these to
 `permissions.allow` when it is not there yet, keeping every other key and entry. They
-are the read-only commands the skills run:
+are the permissions the skills use (inspection commands; `sed` is among them because
+the skills use it to read, never with `-i`):
 
 `Bash(find:*)`, `Bash(grep:*)`, `Bash(stat:*)`, `Bash(cat:*)`, `Bash(ls:*)`,
 `Bash(sed:*)`, `Bash(head:*)`, `Bash(tail:*)`, `Bash(sort:*)`, `Bash(uniq:*)`,
@@ -313,11 +329,13 @@ The block is the text from `<!-- para:begin -->` to `<!-- para:end -->` in
 `vault.md` exists. The config is never overwritten, and its questions are not asked
 again: their answers are in it.
 
-1. **Read `vault.md`.** If its `REPO_ROOT` is not this folder, the vault has moved: a
-   plan line of its own (Tier 2) to update that one key.
-2. **Compare `SCHEMA`** with `migrations.md`. Higher → say the `common.schema_ahead`
-   string and stop. Lower or missing → the steps `migrations.md` lists for each version
-   up to the current one join the plan, run as it says.
+1. **Read `vault.md`.** Compare its `REPO_ROOT` with this folder, both resolved
+   (`pwd -P`, and `cd "<value>" && pwd -P`), so a symlink or a `/private` prefix is not
+   a move. If they differ, the vault has moved: a plan line of its own (Tier 2) to
+   update that one key.
+2. **Compare `SCHEMA`** with `migrations.md`. Higher → stop, as `paths.md` «Schema
+   version» says. Lower or missing → the steps `migrations.md` lists for each version up
+   to the current one join the plan, run as it says.
 3. **Check every piece** of «Step 5» against the disk with the stored values: missing
    folders, missing templates (`Task.md` only under `files`), `areas.md` (missing → ask
    question 4 only), `adapter.md` under `mcp` (missing → the `mcp-generic.md` procedure),
@@ -327,6 +345,9 @@ again: their answers are in it.
    reported and changes nothing in the config.
 5. An answer given in advance that disagrees with `vault.md` is not applied: say which
    value the vault keeps, and that changing it is an edit to `vault.md`, not a re-run.
+   A Tier 2 line the user declined on an earlier run (an Obsidian value, the
+   `CLAUDE.md` block) is shown again, once per run, as a plan line; declined again, the
+   report says the old value was kept.
 6. **Nothing missing** → say the `init.nothing_to_do` string and stop. Write nothing — not
    even a file rewritten with the same content.
 7. Otherwise the plan, the «yes», the application and the report, as on a first run.

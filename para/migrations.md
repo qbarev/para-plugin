@@ -25,8 +25,8 @@ version section below from the vault's `SCHEMA` + 1 up to the current one, in or
   advance.
 - `SCHEMA` in `vault.md` is raised to the new version **last**, after every other step
   has been applied, so an interrupted migration runs again from the start.
-- A vault whose `SCHEMA` is **higher** than the current one was set up by a newer
-  plugin: nothing is migrated; the plugin needs updating.
+- A vault whose `SCHEMA` is **higher** than the current one is not migrated: `init`
+  stops as `paths.md` «Schema version» says.
 
 ## Versions
 

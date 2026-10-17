@@ -1,5 +1,6 @@
 schema_version: "1"
 name: init-a
+tags: [init-core]
 description: /para:init in an empty folder (scenario A) with every answer given in advance (en, default PARA_DIR, files, Areas not grouped). The eval child may not write into .claude/ (Write there is ask-gated, and the sandbox refuses settings.json), so the config files are graded by the write the run attempted; the files elsewhere are graded on disk. /para:vault-lint on the result is the init-a-lint case.
 context:
   scaffold_script: scaffold.sh

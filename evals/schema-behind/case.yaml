@@ -1,5 +1,6 @@
 schema_version: "1"
 name: schema-behind
+tags: [init-core]
 description: The vault's SCHEMA (0) is older than the plugin's; /para:projects list must stop and ask for /para:init instead of half-working.
 context:
   scaffold_script: scaffold.sh

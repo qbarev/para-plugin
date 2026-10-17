@@ -22,7 +22,8 @@ PARA_ROOT = $REPO_ROOT/$PARA_DIR     (PARA_DIR = "." means PARA_ROOT is REPO_ROO
 ```
 
 If `.claude/para/vault.md` does not exist, **stop and say so** — "run `/para:init`
-from the vault root". Never guess a root from the working directory, never fall back
+from the vault root" (every skill but `/para:init`, which is what creates it). Never
+guess a root from the working directory, never fall back
 to a default, and never write config or notes anywhere else: a wrong root writes notes
 into the wrong vault.
 
