@@ -84,6 +84,12 @@ for op in $ops; do
   done
 done
 
+# Check 6c: the empty form of the generated adapter carries every operation and a blank pairing line.
+for op in $ops; do
+  grep -qF "### \`$op\`" config.example/adapter.md || report "missing-operation: config.example/adapter.md lacks $op"
+done
+grep -qE '^pairing:[[:space:]]*$' config.example/adapter.md || report "missing-pairing: config.example/adapter.md lacks a blank 'pairing:' line"
+
 # Check 7: every adapter declares its pairing model once, as a line `pairing: separate|none`
 # (tasks.md «Pairing»). The generic MCP adapter is exempt: it writes the value per vault.
 for a in para/adapters/*.md; do
