@@ -1,0 +1,22 @@
+schema_version: "1"
+name: init-a-lint
+description: /para:vault-lint on a vault exactly as /para:init scenario A left it (the init-a-done fixture, taken from a real init run, plus the user's own edits) reports nothing that breaks the vault or violates the schema.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:vault-lint"
+  max_turns: 40
+  allowed_tools: [Read, Glob, Grep, Bash]
+runs: 1
+graders:
+  - type: regex
+    name: lint-ran
+    pattern: 'Vault check'
+  - type: regex
+    name: lint-no-breaks
+    pattern: 'Breaks the vault'
+    match: not_contains
+  - type: regex
+    name: lint-no-schema
+    pattern: 'Violates the schema'
+    match: not_contains

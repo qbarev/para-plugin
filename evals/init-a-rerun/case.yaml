@@ -1,0 +1,40 @@
+schema_version: "1"
+name: init-a-rerun
+description: /para:init again on a vault it already set up (scenario A output plus the user's own edits), with the same answers in advance; nothing is written and the user's edits survive. The tree-wide shasum comparison is run by hand (see the Task 8 report); these graders are its in-eval proxy (a Bash write cannot be told from a harmless temp file by its input, so Bash is not graded; a created file or a changed sentinel is).
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:init Answers in advance: language en; PARA_DIR: the default; tasks: files; Areas are not grouped (GROUPING none). The plan is approved in advance: show it, then apply it without waiting."
+  max_turns: 60
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: says-nothing-to-do
+    pattern: 'Everything is in place'
+  - type: tool_used
+    name: no-write
+    tool: Write
+    min: 0
+    max: 0
+  - type: tool_used
+    name: no-edit
+    tool: Edit
+    min: 0
+    max: 0
+  - type: file_exists
+    name: no-file-created
+    path: "**"
+    exists: false
+  - type: regex
+    name: config-kept
+    target: { source: file, path: ".claude/para/vault.md" }
+    pattern: '\| `IGNORE` \| `Daily` \|'
+  - type: regex
+    name: edited-template-kept
+    target: { source: file, path: "PARA/Templates/Project.md" }
+    pattern: '%% edited by the user %%'
+  - type: regex
+    name: obsidian-user-key-kept
+    target: { source: file, path: ".obsidian/app.json" }
+    pattern: '"showLineNumber":\s*true'

@@ -1,0 +1,18 @@
+schema_version: "1"
+name: schema-behind
+description: The vault's SCHEMA (0) is older than the plugin's; /para:projects list must stop and ask for /para:init instead of half-working.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:projects list"
+  max_turns: 20
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: migrate-message
+    pattern: '/para:init[\s\S]*миграц|миграц[\s\S]*/para:init'
+  - type: regex
+    name: no-project-listing
+    pattern: 'Поездка в горы|Сайт студии|Ремонт кухни'
+    match: not_contains
