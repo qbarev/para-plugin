@@ -26,6 +26,16 @@ single rule for what a skill does at an operation the adapter marks «not suppor
      in order;
    - `inbox.close` must complete or otherwise close the capture without destroying it
      (`tasks.md`). A tool that can only delete leaves it «not supported».
+   - `task.add`, `task.list` and `task.move` take both addressing forms, `project_ref`
+     and `area` (exactly one per call); say how each is met, including how an `area`
+     name is resolved to a project. `task.move` also takes the optional `title`
+     (a rename on move); a tool that cannot rename marks that input unsupported;
+   - an app with no inbox concept marks `inbox.add`, `inbox.list` and `inbox.close`
+     «not supported»;
+   - **confirm a change by re-reading the object, never trust the tool's echo.** For
+     `project.archive`, `project.restore`, `task.label` and `task.move`, the proposal
+     names the read call that confirms the change (for example reading the project
+     list or the task back), and the generated section carries that read step;
    - `project.activity` must return `state` always (from the project list: absent is
      `missing`) and may leave `last_event` absent;
    - `project.list` and `task.label` are optional, and «not supported» is a normal
@@ -40,12 +50,23 @@ single rule for what a skill does at an operation the adapter marks «not suppor
 5. **Choose `pairing`** (`tasks.md` «Pairing»): `separate` for an app with projects of
    its own, which is the normal case; `none` only for an app with no project concept,
    where a project folder is its own list. Say which and why.
-6. **Show the table**: one row per operation, with the tool, its arguments and the
+6. **Verify reads (optional, with the user's consent).** Ask once. If the user agrees,
+   call only read operations (`project.list`, `inbox.list`, `task.list`) to confirm the
+   result mapping and the paging: follow cursors until exhausted (an empty page with a
+   cursor is not the end). Correct the proposal where the real result differs. **Never
+   call a mutating tool during the procedure.** Every mutating operation
+   (`inbox.add`, `inbox.close`, `project.create`, `project.archive`,
+   `project.restore`, `project.delete`, `task.add`, `task.move`, `task.label`) is marked
+   «behaviour unverified» in the table, and in its section of the generated file.
+7. **Show the table**: one row per operation, with the tool, its arguments and the
    result mapping, and the `pairing` line. Ask for a «yes» (`confirm.md`). Nothing is
    written before it. On anything else, change the table and show it again.
-7. **Write** `<REPO_ROOT>/.claude/para/adapter.md` (`REPO_ROOT` from `vault.md`), in the
-   shape below. This is the only file the procedure writes; it makes no call to the
-   app's tools beyond reading their list.
+8. **Write** `<REPO_ROOT>/.claude/para/adapter.md` (`REPO_ROOT` from `vault.md`), in the
+   shape below. This is the only file the procedure writes; it makes no write
+   calls; read calls only with the user's consent (step 6). `init` writes the file from
+   `config.example/adapter.md` without that file's preamble (the bold vault-specific
+   paragraph), so the vault's `adapter.md` begins at the `# Adapter:` heading and the
+   description line.
 
 ## Shape of the generated file
 
@@ -74,6 +95,10 @@ If the tools are not available in the session, `tasks.md` «Backend missing» ap
   An operation without a match has the section too, with the body `not supported` and
   the reason.
 - `pairing:` is a line of its own, `separate` or `none`, exactly once.
+- An operation that changes something (`project.archive`, `project.restore`,
+  `task.label`, `task.move`) carries its confirming read in its section: «confirm by
+  re-reading <object> with <tool>; the tool's echo is not evidence».
+- A mutating operation not exercised during `init` carries «behaviour unverified».
 - Tool names appear only in this generated file, as in `todoist.md`.
 
 `config.example/adapter.md` is the empty form of this shape: every section present,
