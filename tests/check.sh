@@ -54,12 +54,22 @@ done < <(awk '
 ' skills/*/SKILL.md para/*.md)
 
 # Check 4 (R7): optional denylist of personal terms, one per line, kept outside the repo.
-if [ -n "${PARA_DENYLIST:-}" ] && [ -r "$PARA_DENYLIST" ]; then
-  while IFS= read -r hit; do
-    report "denylist: $hit"
-  done < <(git ls-files -z | xargs -0 grep -nIiF -f "$PARA_DENYLIST" 2>/dev/null)
-else
+if [ -z "${PARA_DENYLIST:-}" ]; then
   echo "denylist check skipped (PARA_DENYLIST not set)"
+elif [ ! -f "$PARA_DENYLIST" ] || [ ! -r "$PARA_DENYLIST" ]; then
+  report "denylist: PARA_DENYLIST is set but is not a readable file"
+else
+  # Print file:line only, never the matching text.
+  files=()
+  while IFS= read -r -d '' f; do files+=("$f"); done < <(git ls-files -z)
+  dl_out=$(grep -nIiF -f "$PARA_DENYLIST" "${files[@]}" 2>&1)
+  rc=$?
+  dl_out=$(printf '%s\n' "$dl_out" | sed -E 's/^([^:]+:[0-9]+):.*/\1/')
+  if [ "$rc" -gt 1 ]; then
+    report "denylist: grep failed (exit $rc)"
+  else
+    while IFS= read -r hit; do [ -n "$hit" ] && report "denylist: $hit"; done <<<"$dl_out"
+  fi
 fi
 
 if [ "$fail" -ne 0 ]; then
