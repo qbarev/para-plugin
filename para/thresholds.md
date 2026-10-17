@@ -22,7 +22,7 @@ the note (`stat -f '%m %N'`).
 The two numbers differ by design: areas move slowly by nature, and an area silent for a
 fortnight is normal where a project silent for a fortnight is a signal.
 
-**Report the span, do not characterise it.** "не менялся 23 дня" is a fact; "заброшен"
+**Report the span, do not characterise it.** "unchanged for 23 days" is a fact; "abandoned"
 is a verdict, and belongs to the user.
 
 ### The limit of mtime
@@ -57,14 +57,15 @@ a folder is small, read all of it.
 
 Computed one way wherever they appear, from the paired backend project (`task.list`):
 
-- **запланировано** — open tasks dated today or later;
-- **просрочено** — open tasks dated before today (this is where «overdue» is defined);
-- **в бэклоге** — open tasks with no date;
-- **закрыто** — completed tasks, over the period the caller names.
+- `count.scheduled` — open tasks dated today or later;
+- `count.overdue` — open tasks dated before today (this is where «overdue» is defined);
+- `count.backlog` — open tasks with no date (`count.backlog_short` where a line is tight);
+- `count.closed` — completed tasks, over the period the caller names.
 
-Under `pairing: separate`, no pair → no counts: say «нет пары в менеджере задач», never `0`.
+The labels are the `lang/<LANG>.md` strings of those keys. Under `pairing: separate`, no
+pair → no counts: say the `task.unpaired` string, never `0`.
 
 ## Acceptance
 
-`# Критерий готовности` holds **2–5** checkboxes (`dod.md` owns why). Acceptance is
+The `project.dod` section holds **2–5** checkboxes (`dod.md` owns why). Acceptance is
 ticked over total, `☑`/`☐`. Section missing or still a placeholder → drop the line.

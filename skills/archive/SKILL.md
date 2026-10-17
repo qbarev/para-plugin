@@ -1,7 +1,7 @@
 ---
 name: archive
-description: Work with Archive in the Obsidian PARA vault — put a finished or abandoned project (folder and its Todoist project) or a note into the archive, list what is already there, or restore something back into an active folder. Use when the user says "заархивируй", "перенеси в архив", "закрой проект", "что в архиве", "покажи архив", "верни из архива", "восстанови проект".
-argument-hint: <что> | list | restore <что>
+description: Work with Archive in the Obsidian PARA vault — put a finished or abandoned project (folder and its Todoist project) or a note into the archive, list what is already there, or restore something back into an active folder. Use when the user says "archive this", "move to archive", "close the project", "what is in the archive", "show the archive", "restore from the archive", "заархивируй", "перенеси в архив", "закрой проект", "что в архиве", "покажи архив", "верни из архива", "восстанови проект".
+argument-hint: <target> | list | restore <target>
 ---
 
 # Archive
@@ -14,7 +14,7 @@ project's backend pair is archived and restored together with its folder.
 
 Read before acting, each as `../../para/<file>.md` relative to this skill's base directory — these hold the shared rules, do not restate them from memory:
 
-- `../../para/paths.md` — always
+- `../../para/paths.md` — always, including «Language»: the strings below come from `lang/<LANG>.md`
 - `../../para/find-target.md` — for the subcommands that take a target
 - `../../para/move.md` — always
 - `../../para/confirm.md` — always
@@ -25,12 +25,12 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 ## Subcommands
 
 The first word of `$ARGUMENTS` picks the subcommand. `list` and `restore` are the only
-keywords — anything else is the target of an archive, so `/archive проект в` archives
+keywords — anything else is the target of an archive, so `/archive project c` archives
 that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
 
 ---
 
-### `<что>` — put into the archive
+### `<target>` — put into the archive
 
 1. **Find the target** per `find-target.md`, operation "Archive".
 
@@ -66,18 +66,20 @@ that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
    A duplicate makes every link to that name ambiguous — Tier 1.5, ask rather than move.
 
 5. **Close the loop — projects only.** Before reporting, ask one question and wait for
-   the answer: **что этот проект изменил?** Not what got produced — condition 2 of
+   the answer: the `archive.ask_changed` string. Not what got produced — condition 2 of
    `dod.md` already covers the artifact — but what is different now that it is over,
    and whether it was worth what it cost.
 
-   Before asking, **read `# Ценность` aloud** — the benefit the user wrote down when
+   Before asking, **read the `project.value` section aloud** — the benefit the user wrote down when
    the project began (`note-format.md`, "Three sections about the outcome") — and ask
-   whether it came true: «Ожидалось: −5 часов ревью в неделю. Сбылось?». If the
+   whether it came true with the `archive.expected` string (`{value}` = what they wrote,
+   e.g. «−5 hours of review a week»). If the
    section is empty or absent, ask the question as it stands, without inventing an
    expectation.
 
-   Write **`# Что изменилось`** at the end of the overview body. Its **first line** is
-   the outcome per `dod.md` — `Завершён.` or `Брошен: <причина>.` — then the user's
+   Write the **`project.what_changed` section** at the end of the overview body. Its
+   **first line** is the outcome per `dod.md` — the `project.outcome.completed` or
+   `project.outcome.abandoned` string (`{reason}` in the user's words) — then the user's
    answer in their own words; do not summarise it into your own. If the answer names
    something that outlives the project, that is condition 4 of `dod.md` speaking; route
    it to `Areas/` or `Resources/` rather than leaving it in the archive.
@@ -96,29 +98,34 @@ Read only. Never open the notes beyond what is named below.
 
 1. List `Archive/` — both project folders and loose `.md` files.
 2. For each project folder, read the overview frontmatter (`id`, `deadline`) and the
-   first line of `# Что изменилось`, if the section exists.
-3. Print two Russian sections, each alphabetical, with a count in the header:
+   first line of the `project.what_changed` section, if the section exists.
+3. Print two sections in `LANG`, each alphabetical, with a count in the header (the
+   `archive.list.projects` and `archive.list.notes` strings). The outcome is the first
+   line's text without its period, and the deadline is the `archive.list.deadline`
+   string; shown here with the English strings:
 
 ```
-**Проекты в архиве (N)**
-1. PROJ-0005 Проект Д — Завершён, дедлайн 2026-09-30
-2. PROJ-0007 Проект Ж — Брошен
-3. PROJ-0003 Проект В — без отметки
-4. Старый проект — без метаданных
+**Archived projects (N)**
+1. PROJ-0005 Project D — Completed, deadline 2026-09-30
+2. PROJ-0007 Project F — Abandoned
+3. PROJ-0003 Project C — no outcome recorded
+4. Old project — no metadata
 
-**Заметки в архиве (N)**
-1. Какая-то заметка
+**Archived notes (N)**
+1. Some note
 ```
 
-The outcome is read only when the first non-blank line of `# Что изменилось` is
-exactly `Завершён.` or starts with `Брошен`. Otherwise — the section is missing, or it
-opens with the user's own words, as in projects archived before this rule — print
-`без отметки`; never infer an outcome from free text or from a legacy `status`. `без метаданных`
-— no frontmatter at all. An empty archive is a valid answer: say it plainly.
+The outcome is read only when the first non-blank line of the `project.what_changed`
+section is exactly the `project.outcome.completed` string or starts with the
+`project.outcome.abandoned` string up to its colon. Otherwise — the section is missing,
+or it opens with the user's own words, as in projects archived before this rule — print
+the `archive.no_outcome` string; never infer an outcome from free text or from a legacy
+`status`. The `common.no_metadata` string — no frontmatter at all. An empty archive is a
+valid answer: say it plainly.
 
 ---
 
-### `restore <что>` — bring something back
+### `restore <target>` — bring something back
 
 1. **Find the target** per `find-target.md`, operation "Restore from archive".
 2. **Work out where it goes back to.** A project returns to `Projects/`. A note
@@ -130,8 +137,8 @@ opens with the user's own words, as in projects archived before this rule — pr
 4. **The task side — projects only.** `project.restore` with the `ref`. Under
    `pairing: separate` with no `tasks_ref:`, offer to create the pair (`tasks.md`
    «Pairing»); on yes, `project.create`, add a `tasks_ref:` key and fill it. Under
-   `pairing: none` there is no pair to offer. Leave ticked checkboxes in `# Критерий готовности` and
-   the `# Что изменилось` section as they are — editing them is Tier 2 and rarely
+   `pairing: none` there is no pair to offer. Leave ticked checkboxes in the `project.dod` section and
+   the `project.what_changed` section as they are — editing them is Tier 2 and rarely
    wanted.
 5. **Report**: what came back, to where, and the state of its backend pair.
 
@@ -139,4 +146,5 @@ opens with the user's own words, as in projects archived before this rule — pr
 
 - Never delete anything here. Archiving is always a move into `Archive/`; if the user
   wants something gone, that is `/remove`.
-- All user-facing text and every frontmatter value in Russian.
+- All user-facing text and every frontmatter value in `LANG`; fixed strings come from
+  `lang/<LANG>.md`.

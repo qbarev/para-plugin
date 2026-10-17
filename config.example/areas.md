@@ -39,16 +39,18 @@ every line of tooling.
 
 ## Shape of `areas review` output
 
-The output groups by this model, so its shape belongs here too. Render in Russian. The
-names below are placeholders — replace them along with the keys:
+The output groups by this model, so its shape belongs here too. Render in `LANG`, with
+the `areas.review.*` strings of `lang/<LANG>.md` (`areas.review.heading`,
+`areas.review.group`, `areas.review.no_notes`, `areas.review.stale`). The names below are
+placeholders — replace them along with the keys:
 
 ```
-## Области
+## Areas
 
-**Группа 1** — 4 заметки, последняя правка 12 дней назад
-- «Область А» не менялась 74 дня
+**Group 1** — notes: 4, last edit 12 d ago
+- «Area A» unchanged for 74 d
 
-**Группа 2** — нет заметок
+**Group 2** — no notes
 ```
 
 With `GROUPING = none` there are no blocks: one flat list of area notes, same lines

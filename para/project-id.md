@@ -33,7 +33,7 @@ match — that is intentional, so the comment can never be mistaken for a retire
 Add 1 to the number, zero-pad to four digits. No hits at all → `PROJ-0001`.
 
 The `id` field in frontmatter is the source of truth, not the folder name prefix. Old
-archived projects have neither (`Старый проект`); they were never issued an id and
+archived projects have neither (`Old project`); they were never issued an id and
 do not affect the count.
 
 ## The journal
@@ -41,7 +41,7 @@ do not affect the count.
 `Archive/.removed-ids` — one line per deleted project, appended by `/remove`:
 
 ```
-PROJ-0042  2026-09-12  Название удалённого проекта
+PROJ-0042  2026-09-12  Title of the deleted project
 ```
 
 The id in that example is deliberately one no project has ever held. Never copy a

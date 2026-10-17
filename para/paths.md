@@ -26,6 +26,27 @@ from the vault root". Never guess a root from the working directory, never fall 
 to a default, and never write config or notes anywhere else: a wrong root writes notes
 into the wrong vault.
 
+## Language
+
+`LANG` in `vault.md` (`ru` or `en`) is the language of the vault. Everything a skill
+writes into a note or prints to chat is in that language. Every *fixed* string — section
+headings, frontmatter vocabulary values, the research-task name, report headings, route
+names, lint finding names — comes from the plugin's `lang/<LANG>.md`, found as
+`../../lang/<LANG>.md` relative to a skill's base directory, the way `../../para/` is.
+
+- A skill names a fixed string by its **key**: «the `project.dod` section», «the
+  `task.unpaired` string». It reads the file once per run and takes the string from
+  there; it never translates a fixed string from memory and never keeps a second copy.
+  Placeholders in braces (`{n}`) are filled by the skill.
+- The examples in the plugin's own text are written in English whatever `LANG` is; the
+  output follows `LANG`, not the language of the examples and not the language the user
+  happened to type in.
+- `vault.md` missing means `LANG` is unknown: the stop message above is said in English.
+  A `LANG` that is not `ru` or `en`, or a missing `lang/<LANG>.md`: stop and say so.
+- Frontmatter keys stay Latin and identical in every language. Machine values (such as
+  a task's `status: open | done`) are not localised; vocabulary values (such as a
+  resource's `type`) are keys in `lang/<LANG>.md`.
+
 ### How `vault.md` is found
 
 Reading `REPO_ROOT` from a file requires knowing where that file is — the one piece of
@@ -58,7 +79,8 @@ Skills run operations **per the adapter for `TASKS`**:
 
 ## The inbox is the backend's inbox, not a folder
 
-The capture buffer is the task backend's inbox («Входящие»): `inbox.add`, `inbox.list`,
+The capture buffer is the task backend's inbox (shown to the user as the `inbox.name`
+string): `inbox.add`, `inbox.list`,
 `inbox.close` in `tasks.md`. A capture is a task: the thought as its text, anything
 longer in its description. It becomes a note only when `/inbox process` routes it into a
 PARA folder, and the capture is closed then. No skill ever writes a capture to disk
@@ -86,8 +108,8 @@ belongs to it, and anything found there is a stray that `/vault-lint` reports an
 | Archive | `Archive/` |
 | Templates | `Templates/` |
 
-Project folder: `Projects/PROJ-xxxx <Название>/`, containing the overview note
-`PROJ-xxxx <Название>.md` plus `Notes/`, `Resources/`, `Results/`. Tasks are not in the
+Project folder: `Projects/PROJ-xxxx <title>/`, containing the overview note
+`PROJ-xxxx <title>.md` plus `Notes/`, `Resources/`, `Results/`. Tasks are not in the
 overview — they are in the backend project (`tasks.md`); when `TASKS = files` they are
 the notes in the project's own `Tasks/` folder (`adapters/files.md`), created with the
 first task. Whether a `Tasks/` folder is legacy depends on `TASKS`
@@ -100,7 +122,7 @@ Templates by destination — see `note-format.md` for how to apply them:
 | `Projects/` | `Templates/Project.md` |
 | `Areas/` | `Templates/Area.md` |
 | `Resources/` | `Templates/Resource.md` |
-| `<Проект>/Notes/`, `<Проект>/Results/` | `Templates/Note.md` |
+| `<project>/Notes/`, `<project>/Results/` | `Templates/Note.md` |
 | a task (only when `TASKS = files`) | `Templates/Task.md` |
 
 Service files (dotfiles — Obsidian ignores them, they are not notes):

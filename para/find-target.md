@@ -1,6 +1,6 @@
 # Finding a target
 
-How to turn a user's loose description ("проект в", "PROJ-0003", "заметка А")
+How to turn a user's loose description ("project c", "PROJ-0003", "note a")
 into exactly one file or folder. Read `paths.md` first — every path here is relative
 to `PARA_ROOT`.
 
@@ -22,12 +22,12 @@ Deleting an archived project is the ordinary case, not the exotic one, which is 
 `Archive/` is in the Remove row: an id is retired only by deletion, and by then the
 project has usually been archived already.
 
-Search recursively: Areas and Resources are nested (`Areas/<Группа 1>/<Тема>/…`, the
+Search recursively: Areas and Resources are nested (`Areas/<Group 1>/<Topic>/…`, the
 depth depending on the model in `areas.md`).
 
 ## Matching a project
 
-A project folder is named `PROJ-xxxx <Название>`, so its name never equals the title.
+A project folder is named `PROJ-xxxx <title>`, so its name never equals the title.
 
 - If the description contains `PROJ-` followed by digits, match on the id — that is
   exact, take it.
@@ -35,11 +35,11 @@ A project folder is named `PROJ-xxxx <Название>`, so its name never equa
   folder in scope) — exact, case-insensitive. A `short` match wins over any substring
   match.
 - Otherwise match against the **title part only**, after the `PROJ-xxxx ` prefix.
-- Match on substring, case-insensitively. "проект в" must find `PROJ-0003 Проект В`.
+- Match on substring, case-insensitively. "project c" must find `PROJ-0003 Project C`.
 - The `id` field inside the overview note's frontmatter is the source of truth, not the
   folder name. If they disagree, say so instead of picking one.
 - Archived projects predating the convention have no prefix and no frontmatter
-  (`Старый проект`). Match those on the folder name as-is.
+  (`Old project`). Match those on the folder name as-is.
 
 ## Matching a note
 
@@ -59,6 +59,6 @@ Count the candidates, then:
   silently, not even when one looks obviously better.
 
 A project folder and a note inside it can both match the same words. When the matches
-span both kinds, treat them as separate candidates and let the user choose — "удали
-проект в" may mean the project folder or one note inside it. The "Report on" row is the
+span both kinds, treat them as separate candidates and let the user choose — "delete
+project c" may mean the project folder or one note inside it. The "Report on" row is the
 exception: there a matched project folder wins, as the table says.

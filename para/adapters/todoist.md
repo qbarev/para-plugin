@@ -21,7 +21,7 @@ Todoist specifics that hold for every operation:
 - Todoist apps show durations under 24 hours only; the adapter sends `duration` as given
   (`30m`, `2h`).
 - The inbox is the project with `inboxProject: true` (its API name is `Inbox`; the
-  user sees «Входящие»). Tools address it as `projectId: "inbox"`.
+  user sees the `inbox.name` string). Tools address it as `projectId: "inbox"`.
 - Task fields map: `text` = `content`, `due` = the task's due date, `created` = `addedAt`.
 - `area` names are resolved to a project id with `find-projects` and `searchText`; no
   match, or more than one, is reported, never guessed.

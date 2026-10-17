@@ -81,12 +81,11 @@ Each adapter declares `pairing:` once, at its top.
   - **The key is the id, never the name.** A project renamed on either side stays
     paired. Two overviews carrying the same id is a lint finding.
   - A project in `Projects/` without `tasks_ref` is **unpaired** — every project created
-    before this file existed, until it is migrated. Report it as «нет пары в менеджере
-    задач» and carry on; never create the pair as a side effect of reading. Steps that
+    before this file existed, until it is migrated. Report it with the `task.unpaired` string and carry on; never create the pair as a side effect of reading. Steps that
     resolve `tasks_ref` or offer a pair apply only under this value.
 - **`pairing: none`** (the `files` backend): the project is its own task list. `tasks_ref` is absent
   and not required; `ref` is the project folder itself, derived from its path and never
-  stored. «Unpaired» does not exist: no «нет пары», no offer to create a pair.
+  stored. «Unpaired» does not exist: no `task.unpaired`, no offer to create a pair.
   `project.create`, `project.archive`, `project.restore` and `project.delete` are no-ops
   (the folder moves are the skills' own). `project.activity` returns `state: active`
   while the folder exists and `missing` when it does not; `last_event` is the adapter's.
@@ -97,7 +96,8 @@ archived (`/archive`). Whether a project is *being worked on* is not stored anyw
 it is visible as recent activity (`project.activity`) and dated tasks in it.
 
 A project **waiting on someone else** (a consultant, a reply) carries a
-short check task, dated for the day it makes sense: «Проверить, ответил ли консультант», 5 min.
+short check task, dated for the day it makes sense, named per the `task.waiting.name`
+string (e.g. «Check whether the consultant has replied»), 5 min.
 
 ## Area projects
 
@@ -110,8 +110,8 @@ and operations take them as `area`.
 
 A task is a **concrete physical action**, readable without context:
 
-- **verb and object** — «Написать поставщику письмо с вопросом о сроках поставки», not
-  «Ресерч „Права“»;
+- **verb and object** — «Write the supplier an email asking about delivery times», not
+  «Research "Rights"»;
 - **the first ten minutes are obvious** — if they are not, it is a question, not a
   task: ask for the next step instead of writing it;
 - **one sitting** — larger work is split before it gets a date.
@@ -131,23 +131,23 @@ action, say so and ask for the next step rather than writing a vague task.
 This is the only statement of the date rule. A skill that adds a task passes `due` only
 when the user supplied it.
 
-New tasks are Tier 1 (`confirm.md`). Everything in Russian.
+New tasks are Tier 1 (`confirm.md`). Everything in `LANG` (`paths.md` «Language»).
 
 ### The research task
 
 A project whose work is not yet clear — every new project, and any project where
 the user cannot name the next steps — gets **one** task first, and no others:
 
-- name: `Ресерч «<short>»: определить скоуп работ`;
+- name: the `task.research.name` string, with the project's `short` for `{short}`;
 - label `research` (passed as `labels` to `task.add`) — the only
   label in use; it makes every open research a filter away. Where `task.add` cannot take labels, `task.label`; where
   that is unsupported too, the name alone marks it;
 - description: what has to be found out, taken from the project's goal and problem,
-  and the done condition — «в заметке проекта заполнен „Скоуп работ“, по его пунктам
-  заведены задачи»;
+  and the done condition — the `task.research.done` string, with the `project.scope`
+  heading for `{scope}`;
 - no duration, like any task at creation.
 
-Its result lives in the vault: the overview's `# Скоуп работ` section lists the work
+Its result lives in the vault: the overview's `project.scope` section lists the work
 items in plain words. Each item then becomes one or more tasks, worded as above. Never
 invent the scope for the user to skip this step — a list Claude made up is exactly the
 unclear task this rule exists to prevent. When the scope changes later, update the

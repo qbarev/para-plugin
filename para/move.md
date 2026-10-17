@@ -11,7 +11,7 @@ bypasses Obsidian entirely, so nothing rewrites anything — do not rely on it, 
 tell the user their links were updated.
 
 Links survive a filesystem move for a different reason: Obsidian resolves `[[Wikilink]]`
-by **filename, not path**. `[[Ресурс А]]` keeps working wherever that file
+by **filename, not path**. `[[Resource A]]` keeps working wherever that file
 sits in the vault.
 
 Two consequences, and they are the whole reason this file exists:
@@ -28,7 +28,7 @@ Two consequences, and they are the whole reason this file exists:
 grep -rln "\[\[<basename without .md>\]\]" "$PARA_ROOT" --include="*.md"
 ```
 
-Also match the aliased form `[[Имя|текст]]` and, for a project, links to its overview
+Also match the aliased form `[[Name|text]]` and, for a project, links to its overview
 filename including the `PROJ-xxxx ` prefix — that prefix is part of the link target.
 
 Report what points at the file before touching it. For a delete, the user needs this to
@@ -42,7 +42,7 @@ overview's filename does not change. Its backend project is not touched by a mov
 `/archive` handles that side.
 
 ```bash
-mv "$PARA_ROOT/Projects/PROJ-0003 Проект В" "$PARA_ROOT/Archive/"
+mv "$PARA_ROOT/Projects/PROJ-0003 Project C" "$PARA_ROOT/Archive/"
 ```
 
 Quote both paths. Never move onto an existing path — check first; `mv` will happily
@@ -53,7 +53,7 @@ merge a folder into a same-named one.
 Default is the macOS Trash, which keeps the action recoverable:
 
 ```bash
-trash "$PARA_ROOT/Resources/Некоторая заметка.md"
+trash "$PARA_ROOT/Resources/Some note.md"
 ```
 
 Use `rm -rf` only when the user explicitly asks for permanent deletion as a separate

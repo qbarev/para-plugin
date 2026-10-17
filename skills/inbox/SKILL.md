@@ -1,7 +1,7 @@
 ---
 name: inbox
-description: Work with the inbox of the PARA vault, which lives in Todoist «Входящие» — capture a raw thought into Todoist, list what is sitting there unprocessed, or process captures one by one into their proper PARA folder. Use when the user wants to capture a note, or says "запиши", "закинь в инбокс", "что в инбоксе", "покажи инбокс", "разбери инбокс", "разгреби инбокс".
-argument-hint: add <текст> | list | process
+description: Work with the inbox of the PARA vault, which lives in the task manager's inbox (Todoist «Входящие») — capture a raw thought into Todoist, list what is sitting there unprocessed, or process captures one by one into their proper PARA folder. Use when the user wants to capture a note, or says "capture this", "add to the inbox", "what is in the inbox", "process the inbox", "запиши", "закинь в инбокс", "что в инбоксе", "покажи инбокс", "разбери инбокс", "разгреби инбокс".
+argument-hint: add <text> | list | process
 ---
 
 # Inbox
@@ -21,7 +21,7 @@ fall back to writing a file.
 
 Read before acting, each as `../../para/<file>.md` relative to this skill's base directory — these hold the shared rules, do not restate them from memory:
 
-- `../../para/paths.md` — always
+- `../../para/paths.md` — always, including «Language»: the strings below come from `lang/<LANG>.md`
 - `../../para/tasks.md` — always: the operations; for `process` also what a task is, area projects
 - `../../para/note-format.md` — for `process`
 - `../../para/confirm.md` — for `process`
@@ -30,16 +30,16 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 ## Subcommands
 
 The first word of `$ARGUMENTS` picks the subcommand. Anything that is not `list` or
-`process` is treated as the text of an `add`, so `/inbox мысль про сон` captures that
+`process` is treated as the text of an `add`, so `/inbox a thought about sleep` captures that
 thought — the `add` keyword is optional. Empty `$ARGUMENTS` → show the three subcommands
 and ask.
 
 ---
 
-### `add <текст>` — capture
+### `add <text>` — capture
 
 1. **`inbox.add`** with a `title` and optional `description`. A short text is the title
-   as given. A long one gets a short Russian title derived from it (6 words or fewer)
+   as given. A long one gets a short title in `LANG` derived from it (6 words or fewer)
    and the full text verbatim as the description.
 2. **Set nothing else** — no date, priority or labels unless the user said them.
    This is a buffer, not a place to tidy the user's thought into shape.
@@ -55,10 +55,10 @@ If the capture obviously belongs somewhere specific, say so in the report and of
 Read only.
 
 1. **`inbox.list`** — every open capture.
-2. **Print** a numbered list, oldest first, headed
-   `**N во Входящих**, самой старой D дн`. Titles only, no descriptions.
+2. **Print** a numbered list, oldest first, headed with the `inbox.header` string
+   (`{n}` captures, `{days}` the age of the oldest). Titles only, no descriptions.
 3. **Strays.** Not under `TASKS = files` (`paths.md`). List `*.md` in `Inbox/` (filenames only, do not open them). If any exist,
-   add one line: `В папке Inbox/ ещё K файлов — разберу в /inbox process`.
+   add one line, the `inbox.strays` string (`{k}` files).
 4. An empty inbox is a valid, good answer: say so plainly.
 
 ---
@@ -73,17 +73,18 @@ inbox with proposed destinations and ask the user to approve in bulk.
 
 2. **For each capture**: show the title and the content (the description, or the file
    body for a stray) — briefly if it is long. Then give your read of what it is, and
-   offer the routes:
+   offer the routes. The route names are the `inbox.route.*` strings of
+   `lang/<LANG>.md`; the left column below is the key:
 
    | Route | What happens |
    |---|---|
-   | Действие | a to-do outside any project → move it to the area the user picks (`task.move` with `area`; the names are those `tasks.md` gives for `area`, which under `TASKS = files` are `GROUPS` in `areas.md`); wording checked per `tasks.md` «What a task is», a rewording proposed before the move |
-   | Задача проекта | a step of an existing project → the project found per `find-target.md`, the wording proposed per `tasks.md` «What a task is», then `task.move` with that `project_ref` and the new `title`; the task stays open, nothing is created or closed. Under `TASKS = files` a taken basename is a collision: `note-format.md` «Name collisions» |
-   | Проект | an effort with an end state → hand off to `/projects create` |
-   | Область | ongoing responsibility → `/areas create`, or append to an existing Area |
-   | Ресурс | knowledge worth keeping → `/resources create` |
-   | Оставить | not ripe yet — stays in the inbox, no shame in it |
-   | Удалить | junk → close it (see below) |
+   | `inbox.route.action` | a to-do outside any project → move it to the area the user picks (`task.move` with `area`; the names are those `tasks.md` gives for `area`, which under `TASKS = files` are `GROUPS` in `areas.md`); wording checked per `tasks.md` «What a task is», a rewording proposed before the move |
+   | `inbox.route.project_task` | a step of an existing project → the project found per `find-target.md`, the wording proposed per `tasks.md` «What a task is», then `task.move` with that `project_ref` and the new `title`; the task stays open, nothing is created or closed. Under `TASKS = files` a taken basename is a collision: `note-format.md` «Name collisions» |
+   | `inbox.route.project` | an effort with an end state → hand off to `/projects create` |
+   | `inbox.route.area` | ongoing responsibility → `/areas create`, or append to an existing Area |
+   | `inbox.route.resource` | knowledge worth keeping → `/resources create` |
+   | `inbox.route.keep` | not ripe yet — stays in the inbox, no shame in it |
+   | `inbox.route.delete` | junk → close it (see below) |
 
    Recommend one, with a reason in a sentence. The user decides.
 
@@ -93,12 +94,12 @@ inbox with proposed destinations and ask the user to approve in bulk.
 4. **Close the capture** once its route is carried out:
 
    - **Backend capture** — routed into the vault, or junk →
-     `inbox.close` — reversible (`tasks.md`), so Tier 1 (`confirm.md`). **Действие** and
-     **Задача проекта** move the task itself (`task.move`) and leave it open;
-     **Оставить** leaves it where it is.
+     `inbox.close` — reversible (`tasks.md`), so Tier 1 (`confirm.md`). `inbox.route.action` and
+     `inbox.route.project_task` move the task itself (`task.move`) and leave it open;
+     `inbox.route.keep` leaves it where it is.
    - **Stray file** in `Inbox/` — after `/projects create`, `/areas create` or
      `/resources create` has taken its content, remove the file via `/remove`; for
-     **Удалить**, hand it to `/remove` directly. **Действие** turns it into a task
+     `inbox.route.delete`, hand it to `/remove` directly. `inbox.route.action` turns it into a task
      with `task.add` and `area`, then remove the file the same way.
 
 5. **Then go to the next capture.** Do not batch the closing to the end.
@@ -110,4 +111,4 @@ inbox with proposed destinations and ask the user to approve in bulk.
 
 - The inbox is deliberately low-friction: `add` never asks a question it can avoid.
   `process` is where the thinking happens.
-- Everything in Russian, tasks included.
+- Everything in `LANG`, tasks included.

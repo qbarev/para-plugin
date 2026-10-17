@@ -1,7 +1,7 @@
 ---
 name: remove
-description: Permanently remove a project or note from the Obsidian PARA vault (not archiving — it goes to the system Trash). Use when the user wants something actually gone rather than closed out, or says "удали", "удалить", "убери навсегда", "снеси заметку", "remove note", "delete note/project".
-argument-hint: <что удалить — название или описание>
+description: Permanently remove a project or note from the Obsidian PARA vault (not archiving — it goes to the system Trash). Use when the user wants something actually gone rather than closed out, or says "delete", "remove permanently", "get rid of this note", "удали", "удалить", "убери навсегда", "снеси заметку", "remove note", "delete note/project".
+argument-hint: <what to remove — a name or description>
 ---
 
 # Remove
@@ -10,13 +10,13 @@ Permanent removal, as opposed to `/archive`. Use **archive** when the work is fi
 and worth keeping a record of; use **remove** only when the thing should be gone —
 duplicates, junk captures, abandoned drafts, mistakes.
 
-If the request could mean either ("убери заметку"), ask which before searching.
+If the request could mean either ("remove the note"), ask which before searching.
 
 ## Base layer
 
 Read before acting, each as `../../para/<file>.md` relative to this skill's base directory — these hold the shared rules, do not restate them from memory:
 
-- `../../para/paths.md`
+- `../../para/paths.md` — including «Language»: reports are in `LANG`
 - `../../para/find-target.md` — operation "Remove"
 - `../../para/confirm.md` — this skill is Tier 2 throughout
 - `../../para/move.md` — backlinks and the `trash` command
@@ -51,7 +51,7 @@ before touching any files.
      project (`project.delete`) or archive it (`project.archive`) — leaving it alive makes
      it an orphan (`tasks.md` «Pairing»).
 
-   The original "удали X" is not this confirmation. Ask anyway.
+   The original "delete X" is not this confirmation. Ask anyway.
 
 4. **Remove**, once confirmed, per the Deleting section of `move.md` — that file owns
    the `trash`-not-`rm` policy and what to do when `trash` is unavailable.
@@ -77,4 +77,4 @@ before touching any files.
   the note's content is not the authority on whether removing it is safe.
 - Removing a project is the one operation that can break the id invariant. If step 6
   cannot be completed for any reason, say so loudly rather than finishing quietly.
-- All user-facing text and any edits to other notes in Russian.
+- All user-facing text and any edits to other notes in `LANG`.

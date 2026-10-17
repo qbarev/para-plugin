@@ -1,7 +1,7 @@
 ---
 name: vault-lint
-description: Check the Obsidian PARA vault for structural and schema problems — duplicate filenames, dangling wikilinks, notes in the wrong root, broken project ids, frontmatter that violates the schema, orphaned notes. Read-only by default. Use when the user says "проверь хранилище", "линтер", "что сломалось в хранилище", "проверь схему", "найди битые ссылки", "vault lint", or after a bulk move or rename.
-argument-hint: (без аргументов — проверить всё) | --fix
+description: Check the Obsidian PARA vault for structural and schema problems — duplicate filenames, dangling wikilinks, notes in the wrong root, broken project ids, frontmatter that violates the schema, orphaned notes. Read-only by default. Use when the user says "check the vault", "lint the vault", "what is broken in the vault", "check the schema", "find broken links", "проверь хранилище", "линтер", "что сломалось в хранилище", "проверь схему", "найди битые ссылки", "vault lint", or after a bulk move or rename.
+argument-hint: (no arguments — check everything) | --fix
 ---
 
 # Vault lint
@@ -17,7 +17,7 @@ None of it announces itself.
 
 Read before acting, each as `../../para/<file>.md` relative to this skill's base directory (the vault config `areas.md` is the exception — it is in the vault) — the schema being checked lives there, not here:
 
-- `../../para/paths.md` — the two roots
+- `../../para/paths.md` — the two roots, and «Language»: finding names and headings come from `lang/<LANG>.md`
 - `.claude/para/areas.md` (vault config, under `REPO_ROOT`) — the Areas model the schema checks depend on
 - `../../para/note-format.md` — the frontmatter schema and allowed values
 - `../../para/project-id.md` — the id invariant
@@ -25,8 +25,8 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 - `../../para/tasks.md` — the operations; pairing between `Projects/` and the task backend, area projects
 
 Set `REPO_ROOT` and `PARA_ROOT` from `paths.md` before running anything below, and
-`export LC_ALL=C` in the same shell. Under a Russian UTF-8 locale `sort` and `uniq`
-compare by collation, and Cyrillic names collate as equal when they are not: `uniq -d`
+`export LC_ALL=C` in the same shell. Under a UTF-8 locale `sort` and `uniq`
+compare by collation, and non-Latin names (Cyrillic, say) can collate as equal when they are not: `uniq -d`
 then reports duplicates that do not exist, and `sort -u` silently drops distinct link
 targets. Byte comparison is the only correct one here.
 
@@ -40,17 +40,18 @@ skipped the same way.
 ## Severity
 
 Three groups, reported in this order. Never reorder them by count — a single broken
-link matters more than thirty unlinked notes.
+link matters more than thirty unlinked notes. Each finding below is printed under the
+name its `lint.finding.*` key gives, and each group under its `lint.group.*` key.
 
-1. **Ломает хранилище** — links resolve to the wrong file or to nothing.
-2. **Нарушает схему** — Obsidian or a skill will misread the metadata.
-3. **Стоит посмотреть** — not errors. Reported once, without a recommendation to fix.
+1. `lint.group.breaks` — links resolve to the wrong file or to nothing.
+2. `lint.group.schema` — Obsidian or a skill will misread the metadata.
+3. `lint.group.review` — not errors. Reported once, without a recommendation to fix.
 
 ---
 
-## Group 1 — ломает хранилище
+## Group 1 — `lint.group.breaks`
 
-**Хранилище не настроено.** Run this first: without `vault.md` and `areas.md` nothing
+**`lint.finding.not_configured`.** Run this first: without `vault.md` and `areas.md` nothing
 else can run correctly, and every finding below would be computed from a guess. The
 reference copies are `../../config.example/` relative to this skill's base directory.
 
@@ -71,14 +72,14 @@ diff <(grep -hoE '^\| `[A-Z_]+`' "$SKILL_DIR/../../config.example/"*.md | sort) 
 - A key still holding its placeholder text (`*italic between asterisks*`) → name it the
   same way.
 
-**Дубли имён файлов.** Wikilinks resolve by basename, so two files with the same name
+**`lint.finding.duplicate_names`.** Wikilinks resolve by basename, so two files with the same name
 make every link to that name ambiguous. Check across `REPO_ROOT`, not just `PARA_ROOT`.
 
 ```bash
 find "$REPO_ROOT" -name "*.md" -not -path "*/.*" -not -path "*/Templates/*" -exec basename {} \; | sort | uniq -d
 ```
 
-**Висячие вики-ссылки.** Collect every link target, strip aliases (`|`) and heading
+**`lint.finding.dangling_links`.** Collect every link target, strip aliases (`|`) and heading
 anchors (`#`), and check a file of that name exists somewhere.
 
 ```bash
@@ -102,7 +103,7 @@ The target is looked up both as a note (`<name>.md`) and as written, so an attac
 For each hit, report which notes point at it (`grep -rl`), since the fix depends on
 whether the target was renamed, deleted, or never written.
 
-**Заметки в `REPO_ROOT`.** Notes belong under `PARA_ROOT`; anything else is a dropped
+**`lint.finding.notes_in_repo_root`.** Notes belong under `PARA_ROOT`; anything else is a dropped
 path prefix.
 
 ```bash
@@ -119,7 +120,7 @@ The three excluded names are the repository's own files, not notes — they sit 
 `REPO_ROOT` because that is where a repository keeps them, and `.obsidian/app.json`
 hides them from the file explorer via `userIgnoreFilters`.
 
-**Лишние папки в `PARA_ROOT`.** Only the folders `paths.md` maps belong directly under
+**`lint.finding.extra_folders`.** Only the folders `paths.md` maps belong directly under
 `PARA_ROOT`. Anything else — an old numbered `1. Projects/` brought back by a sync, a
 folder created from Obsidian — holds notes no skill will ever look at.
 
@@ -129,7 +130,7 @@ find "$PARA_ROOT" -mindepth 1 -maxdepth 1 -type d ! -name ".*" \
   ! -name "Archive" ! -name "Templates"
 ```
 
-**Файлы в `Inbox/`.** Skip under `TASKS = files` (`paths.md`: there every file is a capture, not a finding). Otherwise the folder is Obsidian's fallback, not a destination (`paths.md`);
+**`lint.finding.inbox_files`.** Skip under `TASKS = files` (`paths.md`: there every file is a capture, not a finding). Otherwise the folder is Obsidian's fallback, not a destination (`paths.md`);
 whatever sits there was created by hand and is waiting to be routed. Name each file and
 point at `/inbox process`. `--fix` never touches them — routing is a decision.
 
@@ -137,16 +138,16 @@ point at `/inbox process`. `--fix` never touches them — routing is a decision.
 find "$PARA_ROOT/Inbox" -name "*.md"
 ```
 
-**Дубли `id`.** Two projects with one id make every `project:` backlink ambiguous.
+**`lint.finding.duplicate_ids`.** Two projects with one id make every `project:` backlink ambiguous.
 
 ```bash
 grep -rhoE '^id: PROJ-[0-9]{4}' "$PARA_ROOT/Projects" "$PARA_ROOT/Archive" | sort | uniq -d
 ```
 
-**`id` не совпадает с префиксом папки.** The frontmatter is the source of truth; a
+**`lint.finding.id_mismatch`.** The frontmatter is the source of truth; a
 mismatch means one of them was edited by hand.
 
-**Заметка указывает на несуществующий проект.** Every `project:` value is a wikilink to
+**`lint.finding.dangling_project`.** Every `project:` value is a wikilink to
 an overview filename — check the target exists.
 
 ```bash
@@ -155,7 +156,7 @@ grep -rhoE '^project: "\[\[[^]]+\]\]"' "$PARA_ROOT" | sed 's/.*\[\[//; s/\]\]"//
 
 ---
 
-## Group 2 — нарушает схему
+## Group 2 — `lint.group.schema`
 
 Check every note carrying frontmatter. Values come from `note-format.md`; do not
 hardcode a second copy of the allowed list here — read it.
@@ -165,7 +166,7 @@ hardcode a second copy of the allowed list here — read it.
   "Allowed values" list in `note-format.md` at run time, which for `area` and the
   grouping field means `GROUPS` in `areas.md`. The lists are deliberately not
   repeated here, so that changing one there changes this check.
-- **Даты** — `deadline`, `created` not matching `YYYY-MM-DD`. A non-ISO date stops
+- **`lint.finding.dates`** — `deadline`, `created` not matching `YYYY-MM-DD`. A non-ISO date stops
   being a Date property in Obsidian and silently drops out of sorting. Legacy `due` in
   old task notes is checked too, while they exist.
 
@@ -174,16 +175,16 @@ hardcode a second copy of the allowed list here — read it.
     | grep -vE ':[[:space:]]*[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]*$'
   ```
 
-- **Плейсхолдеры тегов** — a bare trailing slash never replaced with a real slug.
+- **`lint.finding.tag_placeholders`** — a bare trailing slash never replaced with a real slug.
 
   ```bash
   grep -rnE '^[[:space:]]+- (project|area|resource|topic)/[[:space:]]*$' "$PARA_ROOT" --include="*.md" --exclude-dir=Templates
   ```
 
-- **Проект без одной из трёх подпапок** — `Notes/`, `Resources/`, `Results/`. Check
+- **`lint.finding.missing_subfolders`** — `Notes/`, `Resources/`, `Results/`. Check
   only projects in `Projects/`; archived ones predate the rule. A `Tasks/` folder is
   not required and not an error here (legacy or not: `note-format.md` «Legacy fields»).
-- **`short` или `tasks_ref` не на своём месте** — both belong to a Project overview only
+- **`lint.finding.misplaced_fields`** — both belong to a Project overview only
   (`note-format.md`).
 
   ```bash
@@ -191,13 +192,13 @@ hardcode a second copy of the allowed list here — read it.
     | grep -vE '/(Projects|Archive)/[^/]+/[^/]+\.md$'
   ```
 
-- **Пара с менеджером задач** — only under `pairing: separate` (`tasks.md` «Pairing»).
+- **`lint.finding.pair`** — only under `pairing: separate` (`tasks.md` «Pairing»).
   For every overview in `Projects/` with a non-blank `tasks_ref`, read
   `project.activity` and use its `state` (always returned; `last_event` is irrelevant
   here):
-  - `missing` → «пара потеряна»;
-  - `archived` while the folder is in `Projects/` → «в менеджере задач закрыт, в
-    хранилище нет» — offer `/archive`, never move it here;
+  - `missing` → the `lint.pair_lost` string (`{id}` = the `tasks_ref`);
+  - `archived` while the folder is in `Projects/` → the `lint.pair_closed` string —
+    offer `/archive`, never move it here;
   - the same id on two overviews → name both (a file check, no call needed).
 
   If the backend is unavailable, say so in one line and skip this check — never report every project as
@@ -205,12 +206,12 @@ hardcode a second copy of the allowed list here — read it.
 
 ---
 
-## Group 3 — стоит посмотреть
+## Group 3 — `lint.group.review`
 
 Not errors. Report each as a plain list, **with no suggestion to fix** — these are states
 the vault is allowed to be in.
 
-- **Старый формат** — projects in `Projects/` carrying legacy fields or a
+- **`lint.finding.legacy`** — projects in `Projects/` carrying legacy fields or a
   legacy `Tasks/` folder (`note-format.md` «Legacy fields», which says when it is not
   legacy: then drop the `Tasks/` part of the command below). Count first, then one line per project
   naming what it carries. This is the migration agenda, not noise.
@@ -223,7 +224,7 @@ the vault is allowed to be in.
   done
   ```
 
-- **Копии синхронизации** — `<имя> 2.md` next to `<имя>.md` in the same folder: the
+- **`lint.finding.sync_copies`** — `<name> 2.md` next to `<name>.md` in the same folder: the
   cloud sync's conflict copy. Which one is current is the user's call; name the pairs.
 
   ```bash
@@ -231,16 +232,17 @@ the vault is allowed to be in.
     [ -f "${f% 2.md}.md" ] && echo "$f"; done
   ```
 
-- **Без пары** — only under `pairing: separate`; two lists. Projects in `Projects/` with
+- **`lint.finding.unpaired`** — only under `pairing: separate`; two lists (counts printed
+  with the `lint.unpaired_counts` string). Projects in `Projects/` with
   a blank or missing `tasks_ref`. Backend projects that no overview in `Projects/` or
   `Archive/` points at: `project.list` once, matched by `ref`, leaving out the inbox
   (`is_inbox`) and the `AREA_TASK_PROJECTS` names (`areas.md`); an archived backend
   project paired with an overview in `Archive/` is the normal closed state, not a
   finding. Skip the second list when `project.list` is not supported.
-- **Старое имя поля** — overviews carrying `todoist:` where `tasks_ref:` is now
+- **`lint.finding.old_field_name`** — overviews carrying `todoist:` where `tasks_ref:` is now
   expected (`note-format.md`). Count and names; renaming is the user's call.
 
-- **Заметки-сироты** — nothing anywhere links to them, so they are reachable only by
+- **`lint.finding.orphans`** — nothing anywhere links to them, so they are reachable only by
   search. Expected for a fresh project note; interesting for an old resource.
 
   Exclude legacy task notes (`*/Tasks/*`): projects never linked down to them, so every
@@ -258,7 +260,7 @@ the vault is allowed to be in.
   a stray is already reported in Group 1, and an archived note is supposed to be
   unlinked.
 
-- **Заметки без frontmatter** — they predate the convention. `CLAUDE.md` says to leave
+- **`lint.finding.no_frontmatter`** — they predate the convention. `CLAUDE.md` says to leave
   them alone, so this is a count and a list, never a migration offer. Do not repeat the
   full list on every run if it is long — give the count and the folders.
 
@@ -266,32 +268,35 @@ the vault is allowed to be in.
 
 ## Output
 
-Russian, grouped by severity, counts in the headers. Drop any group that is empty —
-a clean vault should print three short lines, not a wall of ✓.
+In `LANG`, grouped by severity, counts in the headers. The title is the `lint.heading`
+string, the group headings are the `lint.group.*` strings, each finding is named by its
+`lint.finding.*` string. Drop any group that is empty — a clean vault should print three
+short lines, not a wall of ✓. The sentences after a finding's name are written fresh in
+`LANG`. Shown here with the English strings:
 
 ```
-## Проверка хранилища — N заметок
+## Vault check — N notes
 
-### Ломает хранилище (2)
-- Дубль имени: «Область А.md» в `Areas/<Группа 1>/` и `Resources/<Тема>/`
-  — ссылки `[[Область А]]` ведут в одно из двух наугад
-- Висячая ссылка `[[Заметка Б]]` из `Resources/<Тема>/Ресурс А.md`
+### Breaks the vault (2)
+- Duplicate filenames: «Area A.md» in `Areas/<Group 1>/` and `Resources/<Topic>/`
+  — links `[[Area A]]` resolve to one of the two at random
+- Dangling wikilinks: `[[Note B]]` from `Resources/<Topic>/Resource A.md`
 
-### Нарушает схему (2)
-- `Projects/PROJ-0002 Проект Б/PROJ-0002 Проект Б.md` — `deadline: 15.06.2026`,
-  ожидается YYYY-MM-DD
-- `Projects/PROJ-0003 Проект В/PROJ-0003 Проект В.md` — пара потеряна: проекта
-  в менеджере задач с id `abcd…` нет
+### Violates the schema (2)
+- Dates: `Projects/PROJ-0002 Project B/PROJ-0002 Project B.md` — `deadline: 15.06.2026`,
+  expected YYYY-MM-DD
+- Pair with the task manager: `Projects/PROJ-0003 Project C/PROJ-0003 Project C.md` —
+  pair lost: no project with id `abcd…` in the task manager
 
-### Стоит посмотреть
-- Старый формат: 3 проекта — PROJ-0008 (status, priority, value, estimate, Tasks/(7)), …
-- Без пары: в хранилище 3, в менеджере задач 1 («Проект Д»)
-- Сирот: 12 (из них 1 в Archive — это нормально)
-- Без frontmatter: 8, все в `Resources/<Тема>/` и `Archive/`
+### Worth a look
+- Old format: 3 projects — PROJ-0008 (status, priority, value, estimate, Tasks/(7)), …
+- Unpaired: 3 in the vault, 1 in the task manager («Project D»)
+- Orphan notes: 12 (1 of them in Archive — that is normal)
+- Notes without frontmatter: 8, all in `Resources/<Topic>/` and `Archive/`
 ```
 
-End with one line naming what is clean, so a green run says something:
-`Дублей id, ссылок на несуществующие проекты, заметок в корне и потерянных пар нет.`
+End with one line naming what is clean, so a green run says something: the `lint.clean`
+string.
 
 ## `--fix`
 

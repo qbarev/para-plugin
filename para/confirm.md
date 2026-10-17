@@ -11,10 +11,10 @@ editing a frontmatter field. The user can undo any of these by hand in seconds.
 State what you found and what you are about to do, then **do it without waiting**.
 Announcing exists so a wrong target gets caught, not to collect permission:
 
-> Нашёл `Projects/PROJ-0003 Проект В/`. Переношу в `Archive/`,
-> архивирую его проект в менеджере задач.
+> Found `Projects/PROJ-0003 Project C/`. Moving it to `Archive/` and
+> archiving its project in the task manager.
 
-Do not ask "продолжать?" here. A question on every reversible action trains the user
+Do not ask "proceed?" here. A question on every reversible action trains the user
 to answer yes without reading, which is exactly how the wrong file gets archived.
 
 This bans asking for *permission*, not asking for *information*. A reversible operation
@@ -30,7 +30,7 @@ just cannot be carried out correctly yet.
 
 Ask when a field the note cannot be written without has no answer in what the user said:
 
-- a project with no discernible `# Цель`, or no criteria you could turn into real checks;
+- a project with no discernible `project.goal` section, or no criteria you could turn into real checks;
 - an area with no value for the grouping field `areas.md` names — it decides
   which folder the file goes in;
 - a basename that already exists somewhere in the vault (see `note-format.md`);
@@ -52,11 +52,11 @@ checkboxes, editing a note that is not the target of the request.
 State exactly what will happen — the full path, what it contains, what else points at
 it, and where it goes — then **stop and wait for a clear yes**.
 
-> Найдено: `Resources/<Тема>/Заметка А.md`.
-> На заметку ссылаются 2 другие: …
-> Уйдёт в корзину macOS. Удаляю?
+> Found: `Resources/<Topic>/Note A.md`.
+> 2 other notes link to it: …
+> It goes to the macOS Trash. Delete it?
 
-- The original request is not the confirmation. "удали X" starts the operation; it does
+- The original request is not the confirmation. "delete X" starts the operation; it does
   not pre-approve it. Ask anyway.
 - A yes covers the one operation you described. The next irreversible step asks again.
 - Silence, an emoji, or a change of subject is not a yes.
@@ -64,6 +64,6 @@ it, and where it goes — then **stop and wait for a clear yes**.
 
 ## When the request itself is ambiguous
 
-Tier does not apply until you know what the user means. "убери заметку" can mean archive
+Tier does not apply until you know what the user means. "remove the note" can mean archive
 or delete. Ask which before searching — see `find-target.md` for resolving *which*
 object, this is about resolving *which operation*.
