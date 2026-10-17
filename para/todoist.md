@@ -6,7 +6,7 @@ and dates. A task is never written to disk, and no skill keeps a list of tasks i
 note: two copies of one task are what this arrangement exists to avoid. Read
 `paths.md` first.
 
-The user-facing description of this system is the note `Как я работаю` (under
+The user-facing description of this system is the note `Рабочий график` (under
 `Areas/`). It owns the schedule — block times and hours, section `## Ёмкость`. This
 file owns how Claude applies it. Neither restates the other.
 
@@ -141,7 +141,7 @@ come from the system; the timezone from `user-info`.
 
 ### Capacity
 
-Used by Sprint and Week. Take the blocks of the target week from `Как я работаю` →
+Used by Sprint and Week. Take the blocks of the target week from `Рабочий график` →
 `## Ёмкость`. Subtract the overlap of each block with events in the user's primary
 Google calendar (`list_events`). Multiply by the planned share in `thresholds.md`. Show
 the arithmetic in one line:

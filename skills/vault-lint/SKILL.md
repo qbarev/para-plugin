@@ -276,11 +276,11 @@ a clean vault should print three short lines, not a wall of ✓.
 - `Projects/PROJ-0002 Проект Б/PROJ-0002 Проект Б.md` — `deadline: 15.06.2026`,
   ожидается YYYY-MM-DD
 - `Projects/PROJ-0003 Проект В/PROJ-0003 Проект В.md` — пара потеряна: проекта
-  Todoist с id `6hmq…` нет
+  Todoist с id `abcd…` нет
 
 ### Стоит посмотреть
 - Старый формат: 3 проекта — PROJ-0008 (status, priority, value, estimate, Tasks/(7)), …
-- Без пары: в хранилище 3, в Todoist 1 («Ремонт велосипеда»)
+- Без пары: в хранилище 3, в Todoist 1 («Проект Д»)
 - Сирот: 12 (из них 1 в Archive — это нормально)
 - Без frontmatter: 8, все в `Resources/<Тема>/` и `Archive/`
 ```

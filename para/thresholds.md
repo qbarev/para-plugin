@@ -20,7 +20,7 @@ The buffer exists because the first slip otherwise breaks the whole plan.
 ## Capacity
 
 The hours themselves are **not here.** They are the user's schedule and live in the
-note `Как я работаю` under `Areas/`, section `## Ёмкость`: a table with columns
+note `Рабочий график` under `Areas/`, section `## Ёмкость`: a table with columns
 `День | Время | Часы | Тема`, one row per block, `Тема` either `тактика` or
 `стратегия`. The user edits it in Obsidian; read it at run time, every time.
 
