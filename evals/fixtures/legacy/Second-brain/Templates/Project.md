@@ -6,7 +6,7 @@ tags:
   - project/
 area:
 deadline:
-todoist:
+tasks_ref:
 created:
 ---
 

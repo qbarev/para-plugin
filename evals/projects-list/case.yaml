@@ -1,6 +1,6 @@
 schema_version: "1"
 name: projects-list
-description: /para:projects list on the legacy fixture, Todoist unavailable (no connector in the eval child).
+description: /para:projects list on the legacy fixture, task backend unavailable (no connector in the eval child).
 context:
   scaffold_script: scaffold.sh
 execution:
@@ -15,7 +15,7 @@ graders:
     pattern: 'Ремонт кухни[\s\S]*Поездка в горы[\s\S]*Сайт студии'
   - type: regex
     name: unpaired-marked
-    pattern: 'Поездка в горы[^\n]*нет пары в Todoist'
+    pattern: 'Поездка в горы[^\n]*нет пары в менеджере задач'
   - type: regex
     name: legacy-marked
     pattern: 'Сайт студии[^\n]*старый формат'
