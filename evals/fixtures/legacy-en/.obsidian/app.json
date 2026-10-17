@@ -1,0 +1,6 @@
+{
+  "newFileLocation": "folder",
+  "newFileFolderPath": "Second-brain/Inbox",
+  "alwaysUpdateLinks": true,
+  "userIgnoreFilters": ["CLAUDE.md", "README.md", "CHANGELOG.md"]
+}

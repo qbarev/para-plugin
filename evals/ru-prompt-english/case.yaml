@@ -1,0 +1,24 @@
+schema_version: "1"
+name: ru-prompt-english
+description: /para:projects list on the Russian legacy fixture (LANG = ru), with an English sentence after the command; the output stays Russian.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:projects list\n\nPlease keep it short."
+  max_turns: 25
+  allowed_tools: [Read, Glob, Grep, Bash]
+runs: 1
+graders:
+  - type: regex
+    name: order-by-deadline
+    pattern: 'Ремонт кухни[\s\S]*Поездка в горы[\s\S]*Сайт студии'
+  - type: regex
+    name: unpaired-marked-in-russian
+    pattern: 'Поездка в горы[^\n]*нет пары в менеджере задач'
+  - type: regex
+    name: legacy-marked-in-russian
+    pattern: 'Сайт студии[^\n]*старый формат'
+  - type: regex
+    name: no-english-labels
+    pattern: 'no pair in the task manager|old format'
+    match: not_contains
