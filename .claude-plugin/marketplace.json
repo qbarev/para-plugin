@@ -1,0 +1,12 @@
+{
+  "name": "para",
+  "owner": { "name": "qbarev" },
+  "description": "Marketplace for the para plugin.",
+  "plugins": [
+    {
+      "name": "para",
+      "source": "./",
+      "description": "Skills for running an Obsidian PARA vault."
+    }
+  ]
+}
