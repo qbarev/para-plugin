@@ -80,7 +80,7 @@ when `due` was given — the user's own words for the day, passed through. Suppo
 
 ### `task.move`
 
-`update-tasks` with the task `id` and the destination `projectId` — and nothing else.
+`update-tasks` with the task `id` and the destination `projectId`, plus `content` = `title` when a new title is given — and nothing else.
 Todoist keeps the date and recurrence on a project move. Never send the task's current
 `projectId`.
 

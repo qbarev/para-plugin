@@ -17,10 +17,11 @@ graders:
     name: task-written-from-template
     # the Write call's content: Task.md's frontmatter, open, undated, today's `created`
     target: trace
-    pattern: '"content":"---\\ntitle: .{1,200}?\\ntags:\\n  - task\\nstatus: open\\ndue:\\ncreated: \d{4}-\d\d-\d\d\\n---'
+    pattern: '"content":"---\\ntitle: .{1,200}?\\ntags:\\n  - task\\nstatus: open\\ndue:\\nduration:\\ncreated: \d{4}-\d\d-\d\d\\n---'
   - type: file_exists
-    name: no-inbox-write
-    path: "My Drive/files vault/Second-brain/Inbox"
+    name: no-copy-in-inbox
+    # file_exists sees only files the run created, so this checks for a stray new file
+    path: "My Drive/files vault/Second-brain/Inbox/Забронировать хижину на выходные.md"
     exists: false
   - type: file_exists
     name: no-notes-in-cwd

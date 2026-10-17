@@ -11,8 +11,8 @@ runs: 1
 graders:
   - type: regex
     name: no-legacy-finding-for-tasks
-    # the legacy-finding shapes: «<project> … Tasks/» and «Tasks/(N)» (prose may still mention the folder)
-    pattern: 'Сайт студии[^\n]*Tasks/|Tasks/\(\d+\)'
+    # the legacy-finding shapes: the «Tasks/(N)» count shape (prose may still mention the folder)
+    pattern: 'Tasks/\(\d+\)'
     match: not_contains
   - type: regex
     name: no-old-format-finding

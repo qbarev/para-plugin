@@ -33,8 +33,7 @@ The first word of `$ARGUMENTS` picks the subcommand: `list`, `create`, `overview
 `task`. If it is none of those, work out which is meant from the phrasing and say which
 you picked. Empty `$ARGUMENTS` → run `list`, then ask what to do.
 
-Every subcommand meets projects that predate the task backend: `status`, `Tasks/` (unless
-`TASKS = files`, where it is the backend's own folder), no `tasks_ref` field. Read them as `note-format.md` «Legacy fields» says — report, never
+Every subcommand meets projects that predate the task backend: `status`, `Tasks/` (`note-format.md` says when that is legacy), no `tasks_ref` field. Read them as `note-format.md` «Legacy fields» says — report, never
 rewrite.
 
 ---
@@ -120,7 +119,8 @@ it in «Входящие».
 3. **Word the task** per `tasks.md` «What a task is». If the user's wording already
    fits, keep it; otherwise propose the reworded version in the announcement. If it
    cannot be an action, ask for the next step (Tier 1.5).
-4. **`task.add`** with `project_ref` or `area`: the text, a description for anything longer,
+4. **`task.add`** with `project_ref` or `area` (under `TASKS = files` a taken basename is
+   a collision: `note-format.md` «Name collisions», ask, no silent suffix): the text, a description for anything longer,
    `duration` only if given. The date rule is `tasks.md` «Fields».
 5. **Report** the task and the project.
 
@@ -146,7 +146,7 @@ surfaces something worth fixing, say so and let the user decide.
    `thresholds.md` — this is where decisions and risks actually live.
 
 5. **Legacy.** If the overview carries `status` / `priority` / `value` / `estimate`, or
-   the folder has `Tasks/` and `TASKS` is not `files`, add one line: `Старый формат: status, Tasks/ (N файлов) —
+   the folder has a legacy `Tasks/` (`note-format.md`), add one line: `Старый формат: status, Tasks/ (N файлов) —
    перенести при груминге`, naming only what is present. Do not read task notes for
    progress; the migration decides what survives.
 
@@ -222,7 +222,7 @@ surfaces something worth fixing, say so and let the user decide.
    ```
 
    - A past deadline: `дедлайн прошёл N дн назад`.
-   - `старый формат` when legacy fields are present, or `Tasks/` is and `TASKS` is not `files`.
+   - `старый формат` when legacy fields are present, or a legacy `Tasks/` is.
    - The last line names backend projects that no overview points at (`project.list` once,
      matched by `ref`; not the inbox, not `AREA_TASK_PROJECTS`). Drop it when empty or
      when the adapter does not support `project.list`.

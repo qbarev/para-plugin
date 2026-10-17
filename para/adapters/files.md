@@ -29,16 +29,17 @@ Specifics that hold for every operation:
 
 - **Task fields map.** `text` = `title` (frontmatter) and the filename; `description` =
   the note body below the H1; `due` = `due`; `created` = `created`; `labels` = `tags`
-  without `task`; open/completed = `status: open` / `status: done`. `duration` is
-  written as a `duration` key (`30m`, `2h`) after `due` only when given; it is not in
-  the template.
+  without `task`; open/completed = `status: open` / `status: done`. `duration` =
+  `duration` (`30m`, `2h`; blank when not given).
 - **`id`** = the filename without `.md`. Basenames are unique across `REPO_ROOT`
   (`note-format.md` «Name collisions»), so the `id` finds the file with
   `find "$REPO_ROOT" -name "<id>.md" -not -path "*/.*"` and **survives a move**. A name
-  that is already taken is not resolved by the adapter: report the collision and let the
-  skill ask, as `note-format.md` says.
+  that is already taken is not resolved by the adapter (no silent suffix): it reports the
+  collision and the skill resolves it per `note-format.md` «Name collisions» (add to the
+  existing note, another title, or a qualifier), in `task.add` and in `task.move` with
+  a `title` alike.
 - **Writing a task.** Template verbatim; `title` and the H1 = `text`; `created` = today;
-  `status: open`; `due` blank unless given; `tags` is a block list, `task` first, then
+  `status: open`; `due` and `duration` blank unless given; `tags` is a block list, `task` first, then
   `labels`. The date rule is `tasks.md` «Fields»: `due` is written only when the caller
   passes it, as `YYYY-MM-DD`. A recurring date is not supported: say so and write the
   task undated.
@@ -59,7 +60,7 @@ H1 when given. Nothing else is set. Returns the `id`.
 
 ### `inbox.list`
 
-Every `*.md` directly in `Inbox/` whose `status` is not `done`. A note without
+Every `*.md` directly in `Inbox/` (`paths.md`: all are captures) whose `status` is not `done`. A note without
 frontmatter (created by hand in Obsidian, `paths.md`) is an open capture: its `text` is
 the filename, its `created` the file's birth date (`stat -f %SB -t %Y-%m-%d`). Oldest
 first by `created`, ties by filename.
@@ -108,8 +109,11 @@ stored; the modification date is its proxy.
 ### `task.move`
 
 Move the file to the `Tasks/` folder of the destination (`project_ref` or `area`),
-creating it if needed, per `move.md`. The note keeps its `id`, `due` and every other
-field. A capture moved out of `Inbox/` stays open.
+creating it if needed, per `move.md`. When `title` is given, rename the file to it and set
+`title` and the H1 to it (the `id` is then the new name). `created`, the body and every
+other field are kept. The task stays open; a capture moved out of `Inbox/` becomes a
+task of its destination. A basename already taken is a collision (see «Where things
+live»).
 
 ### `project.activity`
 
@@ -128,4 +132,5 @@ An empty result leaves `last_event` absent.
 ### `task.label`
 
 Add the label to `tags` in the note, keeping every tag already there. Rarely needed:
-`task.add` takes `labels`.
+`task.add` takes `labels`. It rewrites the file, so it bumps the modification date that
+`task.list` with `state: completed` filters on.

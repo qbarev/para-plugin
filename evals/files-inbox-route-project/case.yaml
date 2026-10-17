@@ -1,0 +1,33 @@
+schema_version: "1"
+name: files-inbox-route-project
+description: TASKS = files; one capture in Inbox/ routed to a project becomes exactly one open task in the project's Tasks/, none left in Inbox/.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:inbox process. Во Входящих одна заметка «Палатка». Это шаг проекта PROJ-0001 (Поездка в горы): маршрутизируй её как «Задача проекта», новая формулировка — «Купить палатку на двоих». Подтверждаю, без вопросов."
+  max_turns: 40
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: file_exists
+    name: task-in-project-tasks
+    path: "My Drive/files vault/Second-brain/Projects/PROJ-0001 Поездка в горы/Tasks/Купить палатку на двоих.md"
+  - type: regex
+    name: capture-moved-out-of-inbox
+    # file_exists sees only files the run created, so "gone" is read from the trace: a mv or rm of the capture
+    target: trace
+    pattern: '\b(mv|rm)\b.{0,300}?Палатка'
+  - type: file_exists
+    name: no-renamed-copy-in-inbox
+    path: "My Drive/files vault/Second-brain/Inbox/Купить палатку на двоих.md"
+    exists: false
+  - type: regex
+    name: task-not-closed
+    # a done mark written by the model would show in a Write/Edit/Bash input
+    target: trace
+    pattern: '(status: done|status: \"done\")[^\n]{0,40}(Write|Edit)|"new_string":"[^"]*status: done'
+    match: not_contains
+  - type: file_exists
+    name: no-notes-in-cwd
+    path: "Second-brain"
+    exists: false

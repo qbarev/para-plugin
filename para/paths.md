@@ -64,9 +64,10 @@ longer in its description. It becomes a note only when `/inbox process` routes i
 PARA folder, and the capture is closed then. No skill ever writes a capture to disk
 (the `files` backend is the one exception, and its adapter says so).
 
-**When `TASKS = files`, `Inbox/` is a real inbox:** it is where `inbox.add` writes a
-capture, one task note each, and what `inbox.list` reads (`adapters/files.md`). The
-two paragraphs that follow describe every other backend.
+**When `TASKS = files`, `Inbox/` is the inbox, and every file in it is a capture** —
+including one made by hand in Obsidian. `inbox.add` writes there, one task note each,
+and `inbox.list` reads it (`adapters/files.md`). Skills point here for this rule. The
+paragraph that follows describes every other backend.
 
 Under every backend but `files`, `Inbox/` under `PARA_ROOT` exists for one reason: Obsidian needs a folder to put a file
 created by hand (`newFileFolderPath`), and the vault is not meant to be edited from
@@ -89,8 +90,8 @@ Project folder: `Projects/PROJ-xxxx <Название>/`, containing the overvie
 `PROJ-xxxx <Название>.md` plus `Notes/`, `Resources/`, `Results/`. Tasks are not in the
 overview — they are in the backend project (`tasks.md`); when `TASKS = files` they are
 the notes in the project's own `Tasks/` folder (`adapters/files.md`), created with the
-first task. Under any other backend a `Tasks/` folder in a project is legacy
-(`note-format.md`).
+first task. Whether a `Tasks/` folder is legacy depends on `TASKS`
+(`note-format.md` «Legacy fields»).
 
 Templates by destination — see `note-format.md` for how to apply them:
 

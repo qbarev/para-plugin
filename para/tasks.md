@@ -49,7 +49,7 @@ keeps area tasks in folders reads it as a group name from `GROUPS`, and says so)
 | `project.list` | — | the backend's projects as (`ref`, `name`, `is_inbox`, `is_archived`); **optional** — a ledgered addition to the original twelve operations; «not supported» is a normal answer |
 | `task.add` | `project_ref` or `area`; `text`; `description`, `duration`, `due`, `labels` (all optional) | the new task's `id` |
 | `task.list` | `project_ref` or `area`; `state`: `open` (default) or `completed`; for `completed`, `since` and `until` as `YYYY-MM-DD` | the tasks, each with its `due` date |
-| `task.move` | task `id`; destination `project_ref` or `area` | nothing; the task keeps its date, recurrence and `id` |
+| `task.move` | task `id`; destination `project_ref` or `area`; `title` (optional — the task's new text, a rename on move) | nothing; the task keeps its date, recurrence and `id`, and stays open |
 | `project.activity` | `ref` | `state`: `active`, `archived` or `missing` — **always returned**; `last_event`: the time of the latest event (a task added, completed, changed) — **may be absent** («no events found», or not supported) |
 | `task.label` | task `id`; `label` | nothing; **optional**. Used only when the adapter marks `labels` on `task.add` unsupported; otherwise pass `labels` to `task.add` |
 

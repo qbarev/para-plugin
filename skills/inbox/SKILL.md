@@ -10,9 +10,8 @@ The vault's capture buffer is the task backend's inbox, not a folder — `paths.
 that rule and what `Inbox/` on disk is for. A capture leaves the buffer for a proper
 PARA folder once it is clear what it is, or stays in the backend if it is just an action.
 
-Under `TASKS = files` the inbox is the `Inbox/` folder and a capture is a task note in
-it (`paths.md`, `adapters/files.md`); the steps below are unchanged, only the strays
-step is, because every file in `Inbox/` is already a capture.
+Under `TASKS = files` the inbox is the `Inbox/` folder (`paths.md` says what that means,
+including strays); the steps below are unchanged except the strays handling.
 
 Every task call is an operation from `tasks.md`, run per the adapter for `TASKS`. If the
 backend is unavailable, `tasks.md` «Backend missing» applies: say so and stop — never
@@ -58,7 +57,7 @@ Read only.
 1. **`inbox.list`** — every open capture.
 2. **Print** a numbered list, oldest first, headed
    `**N во Входящих**, самой старой D дн`. Titles only, no descriptions.
-3. **Strays.** Not under `TASKS = files`, where `inbox.list` already returns them. List `*.md` in `Inbox/` (filenames only, do not open them). If any exist,
+3. **Strays.** Not under `TASKS = files` (`paths.md`). List `*.md` in `Inbox/` (filenames only, do not open them). If any exist,
    add one line: `В папке Inbox/ ещё K файлов — разберу в /inbox process`.
 4. An empty inbox is a valid, good answer: say so plainly.
 
@@ -70,7 +69,7 @@ The valve on the buffer. Interactive, **one capture at a time** — never dump t
 inbox with proposed destinations and ask the user to approve in bulk.
 
 1. **List the inbox** as above — backend captures first, oldest first, then strays from
-   `Inbox/` (none under `TASKS = files`: `inbox.list` has them). Say how many there are and start with the first.
+   `Inbox/` (under `TASKS = files` `inbox.list` has them all, `paths.md`). Say how many there are and start with the first.
 
 2. **For each capture**: show the title and the content (the description, or the file
    body for a stray) — briefly if it is long. Then give your read of what it is, and
@@ -78,8 +77,8 @@ inbox with proposed destinations and ask the user to approve in bulk.
 
    | Route | What happens |
    |---|---|
-   | Действие | a to-do outside any project → move it to an area project (`AREA_TASK_PROJECTS` in `areas.md`) the user picks; wording checked per `tasks.md` «What a task is», a rewording proposed before the move |
-   | Задача проекта | a step of an existing project → `/projects task <проект> <задача>`, then complete the capture |
+   | Действие | a to-do outside any project → move it to the area the user picks (`task.move` with `area`; the names are those `tasks.md` gives for `area`, which under `TASKS = files` are `GROUPS` in `areas.md`); wording checked per `tasks.md` «What a task is», a rewording proposed before the move |
+   | Задача проекта | a step of an existing project → the project found per `find-target.md`, the wording proposed per `tasks.md` «What a task is», then `task.move` with that `project_ref` and the new `title`; the task stays open, nothing is created or closed. Under `TASKS = files` a taken basename is a collision: `note-format.md` «Name collisions» |
    | Проект | an effort with an end state → hand off to `/projects create` |
    | Область | ongoing responsibility → `/areas create`, or append to an existing Area |
    | Ресурс | knowledge worth keeping → `/resources create` |
@@ -93,9 +92,9 @@ inbox with proposed destinations and ask the user to approve in bulk.
 
 4. **Close the capture** once its route is carried out:
 
-   - **Backend capture** — routed into the vault, turned into a project task, or junk →
-     `inbox.close` — reversible (`tasks.md`), so Tier 1 (`confirm.md`). **Действие**
-     moves the task itself (`task.move` with `area`) and leaves it open;
+   - **Backend capture** — routed into the vault, or junk →
+     `inbox.close` — reversible (`tasks.md`), so Tier 1 (`confirm.md`). **Действие** and
+     **Задача проекта** move the task itself (`task.move`) and leave it open;
      **Оставить** leaves it where it is.
    - **Stray file** in `Inbox/` — after `/projects create`, `/areas create` or
      `/resources create` has taken its content, remove the file via `/remove`; for
