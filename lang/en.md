@@ -37,6 +37,8 @@ project.outcome.completed: Completed.
 project.outcome.abandoned: Abandoned: {reason}.
 archive.no_outcome: no outcome recorded
 common.no_metadata: no metadata
+common.schema_behind: This vault's schema is version {vault}, the plugin expects {plugin}: run `/para:init` to migrate.
+common.schema_ahead: This vault's schema is version {vault}, newer than the plugin's {plugin}: update the plugin.
 
 ## Tasks
 
@@ -137,3 +139,11 @@ lint.pair_lost: pair lost: no project with id `{id}` in the task manager
 lint.pair_closed: closed in the task manager, not in the vault
 lint.unpaired_counts: {vault} in the vault, {backend} in the task manager
 lint.clean: No duplicate ids, links to nonexistent projects, notes in the root or lost pairs.
+
+## Init
+
+init.plan.heading: Plan
+init.plan.approve: Apply this plan? Answer «yes», or say what to change.
+init.report.heading: Done
+init.report.skipped: Skipped
+init.nothing_to_do: Everything is in place — nothing to change.

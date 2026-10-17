@@ -1,0 +1,353 @@
+---
+name: init
+description: Set up a folder as a PARA vault run by this plugin, or bring an already set-up vault up to date — detect what the folder is, ask the setup questions one at a time, show one plan, apply it on one «yes», report. Re-running fills in what is missing and migrates an older vault schema. Use when the user says "set up the vault", "init the vault", "initialise PARA", "migrate the vault", "run /para:init", "настрой хранилище", "инициализируй хранилище", "подключи PARA", "мигрируй хранилище".
+argument-hint: (no arguments — ask everything) | the answers given in advance
+---
+
+# Init
+
+Turns the folder the session was started in into a PARA vault wired to this plugin,
+and keeps it that way: a second run fills in what is missing and migrates an older
+schema. It is the only skill that writes the vault's config, and the only one that runs
+without it.
+
+## What it writes
+
+Everything below and nothing else. `REPO_ROOT`, `PARA_DIR`, `PARA_ROOT` as `paths.md`
+defines them.
+
+| What | Where | How |
+|---|---|---|
+| the PARA folders | `PARA_ROOT/` + `Projects`, `Areas`, `Resources`, `Archive`, `Inbox`, `Templates` | created when missing |
+| the note templates | `PARA_ROOT/Templates/` | seeded from the plugin, only when missing («Templates») |
+| vault config | `REPO_ROOT/.claude/para/vault.md`, `areas.md`; `adapter.md` only when `TASKS` is `mcp` | from `config.example/`; never overwritten |
+| the plugin's block | `REPO_ROOT/CLAUDE.md` | between the markers only («CLAUDE.md») |
+| read-only permissions | `REPO_ROOT/.claude/settings.json` | merged, never replaced («Settings») |
+| Obsidian settings | `REPO_ROOT/.obsidian/app.json`, `templates.json` | merged («Obsidian») |
+
+## Base layer
+
+Read before acting, each as `../../para/<file>.md` relative to this skill's base directory
+(and `../../config.example/`, `../../lang/`, `../../templates/` the same way):
+
+- `../../para/paths.md` — always: the two roots, «Language», the adapter for `TASKS`.
+  Everything `init` writes has to agree with it.
+- `../../para/tasks.md` — the operations, «Pairing», «Backend missing»
+- `../../para/adapters/mcp-generic.md` — when `TASKS` is `mcp`; the adapter for any
+  other value is named by `paths.md`
+- `../../para/note-format.md` — the frontmatter schema the templates must match
+- `../../para/migrations.md` — the plugin's current `SCHEMA` and how a migration runs
+- `../../para/claude-md-block.md` — the block for `CLAUDE.md`
+- `../../para/confirm.md` — the tiers; the plan below is how `init` meets them
+- `../../config.example/vault.md`, `areas.md`, `adapter.md` — the shape of the config
+- `../../lang/<LANG>.md` once `LANG` is known: the `init.*` strings
+
+`SKILL_DIR` below is this skill's base directory, as the harness announces it.
+
+## Rules for the whole run
+
+- **`REPO_ROOT` is the session's working directory**, as an absolute path (`pwd`). This
+  is the one place the plugin takes a root from the working directory: `init` is what
+  writes it down for every other skill. The plan says which folder it is, so a session
+  started in the wrong place is caught before anything is written.
+- **Nothing is written before the plan's «yes».** Inspecting, asking and probing the task
+  backend are read-only.
+- **`vault.md` is written last.** It is what marks a vault as set up; an interrupted run
+  leaves no `vault.md` and the next run starts over, finding the work already done.
+- **Every step is idempotent**: create when missing, merge when present, never
+  overwrite. Running `init` twice in a row changes nothing the second time.
+- Quote every path (`paths.md` «Rules»). `REPO_ROOT` may contain spaces.
+- **Language.** Until `LANG` is chosen, speak the language the user wrote in (English
+  when there is nothing to go by — a bare `/para:init`). From then on, everything is in
+  `LANG` per `paths.md` «Language», including the remaining questions; the plan and
+  report headings are the `init.*` strings.
+
+## Answers given in advance
+
+`$ARGUMENTS` may already carry answers: the language, `PARA_DIR` («the default» means
+the proposed one), the task backend, the Areas model, the snapshot answer, and an
+approval of the plan. Take every answer given and **do not ask it again**; ask only
+what is missing. An answer that is not a valid choice is asked again, saying why.
+
+An approval given in advance means: **show the plan, then apply it without waiting** —
+but only while every line of the plan adds something (a folder, a file, a key, an
+entry). A line that changes or replaces something that already exists (a differing
+Obsidian value, a different `CLAUDE.md` block, a template in a migration, `REPO_ROOT`
+in an existing `vault.md`) is Tier 2 (`confirm.md`): the plan is shown and `init` waits
+for a «yes» even then.
+
+---
+
+## Step 1 — Inspect
+
+Read-only. Find out what the folder is and name the scenario.
+
+```bash
+REPO_ROOT=$(pwd)
+ls -A "$REPO_ROOT"
+ls "$REPO_ROOT/.claude" "$REPO_ROOT/.claude/para" "$REPO_ROOT/.claude/skills" 2>/dev/null
+# notes: every .md outside dot-folders, except the repository's own files and templates
+find "$REPO_ROOT" -name "*.md" -not -path "*/.*" -not -path "*/Templates/*" \
+  ! -path "$REPO_ROOT/CLAUDE.md" ! -path "$REPO_ROOT/README.md" ! -path "$REPO_ROOT/CHANGELOG.md" | head -50
+# a vault above this folder: init was started in a subfolder
+d=$(dirname "$REPO_ROOT")
+while [ "$d" != "/" ] && [ "$d" != "$HOME" ]; do
+  { [ -e "$d/.claude/para/vault.md" ] || [ -d "$d/.obsidian" ]; } && echo "vault above: $d"
+  d=$(dirname "$d")
+done
+```
+
+Stop before anything else when:
+
+- `REPO_ROOT` is `$HOME` or `/` — not a vault; say so.
+- a vault was found above — say «run `/para:init` from `<that folder>`» and stop; never
+  set up a vault inside another one.
+
+Then decide, **in this order**, and say what was found and which case it is:
+
+1. **Set up** — `.claude/para/vault.md` exists → «Re-run and migration» below.
+2. **Scenario C** — the old embedded tooling: a `.claude/para/` folder without
+   `vault.md` (the old base layer and its config), or PARA skills in `.claude/skills/`
+   (folders named `inbox`, `projects`, `areas`, `resources`, `archive`, `remove`,
+   `vault-lint`). → «Scenario C».
+3. **Scenario B** — notes were found (the `find` above printed anything). →
+   «Scenario B».
+4. **Scenario A** — otherwise: an empty folder, or one holding only non-note files
+   (an `.obsidian/` of a new Obsidian vault, a `CLAUDE.md`). → Step 2.
+
+---
+
+## Step 2 — Questions
+
+One at a time, in this order, skipping every one answered in advance. Each question
+shows its choices and, where there is one, the default.
+
+1. **Language** (`LANG`). The choices are the languages the plugin ships: a code with
+   both `lang/<code>.md` and `templates/<code>/` (`paths.md` «Language»):
+
+   ```bash
+   for f in "$SKILL_DIR"/../../lang/*.md; do l=$(basename "$f" .md)
+     [ -d "$SKILL_DIR/../../templates/$l" ] && echo "$l"; done
+   ```
+
+2. **PARA folder** (`PARA_DIR`). Default per scenario: A — `PARA`, a subfolder, so the
+   tooling and the notes stay apart. `.` puts the PARA folders straight into
+   `REPO_ROOT`. Valid: `.` or one folder name — no `/`, not starting with `.`, not one
+   of the PARA folder names themselves.
+
+3. **Task backend** (`TASKS`). The choices are `todoist`, `files` or `mcp`; the first is
+   recommended. Say in one line what each means: an app's inbox and projects; task
+   notes in the vault, no app; any other to-do app connected over MCP. Then **probe** —
+   «Probing the backend» below. A value whose probe failed is never recorded.
+
+4. **Areas model** (`areas.md`). One question: are Areas grouped — `none`, or the
+   names of the groups (for example Work, Home)? Everything else is derived and shown in
+   the plan, where the user can change it:
+
+   | Key | Grouped | `none` |
+   |---|---|---|
+   | `GROUPING` | the field name, `sphere` unless the user named one (the seed templates' key) | `none` |
+   | `GROUPS` | the names given | empty |
+   | `PLACEMENT` | `Areas/<GROUP>/<title>.md` | `Areas/<title>.md` |
+   | `REVIEW_GROUPING` | one block per group, groups with nothing to report dropped | one flat list |
+   | `PLACEMENT_CHECK` | a note's `GROUPING` field must name the top-level folder it sits under | `none` |
+   | `AREA_TASK_PROJECTS` | the `GROUPS` names | one name: the `areas.review.heading` string |
+
+### Probing the backend
+
+The probe is `inbox.list`, run per the adapter for the chosen value (`paths.md`). It is
+read-only; an empty inbox is a success. Print only the count, never the captures.
+
+- **`files`** — nothing to probe: the adapter is the disk, and «Backend missing» cannot
+  happen (`tasks.md`).
+- **`mcp`** — run steps 1–6 of `adapters/mcp-generic.md` now. Step 1 finding no tools is
+  a failed probe. Step 6 is the probe when the user agrees to it and the app has an
+  inbox; otherwise the plan says the mapping is unverified. Steps 7–8 belong to the
+  plan and to «Step 5» below.
+- **Any other value** — run `inbox.list` per its adapter. If the adapter's tools are not
+  in this session, or the call fails: say so in one line (`tasks.md` «Backend
+  missing»), **do not record the value**, and offer `files` instead — or connecting the
+  app and running `/para:init` again. Never write a `TASKS` value whose probe did not
+  succeed, and never record one value while promising to switch later.
+
+---
+
+## Step 3 — The plan
+
+**One list of everything** that will be created, merged or changed, headed by the
+`init.plan.heading` string. It is a proposal the user edits, not an announcement: an
+edit makes a new plan, shown again. It ends with the `init.plan.approve` string, and
+nothing is applied before a «yes» (or the approval given in advance, within the limit
+«Answers given in advance» sets).
+
+The plan names, in this order:
+
+1. `REPO_ROOT` (this folder) and `PARA_ROOT`.
+2. The folders to create.
+3. The templates to copy, each with the changes «Templates» makes to it.
+4. The config: every key of `vault.md` and `areas.md` with its value; for `mcp`, the
+   adapter table (`mcp-generic.md` step 7 — the plan's «yes» is that table's «yes»).
+5. `CLAUDE.md`, `.claude/settings.json`, `.obsidian/app.json`, `.obsidian/templates.json`:
+   what is added to each. **Each existing value that would change is a line of its
+   own**, showing the old and the new value.
+6. The probe result: the backend answered (with the inbox count), or `files`.
+7. What will not be done, and why (a template already present, a value kept).
+
+## Step 4 — Snapshot (B and C only)
+
+Before applying a plan that touches an existing vault, offer a zip copy next to it —
+always asked, refusal accepted, an answer given in advance taken:
+
+```bash
+zip_path="$(dirname "$REPO_ROOT")/$(basename "$REPO_ROOT")-backup-$(date +%Y-%m-%d).zip"
+ditto -c -k --keepParent "$REPO_ROOT" "$zip_path"
+```
+
+Scenario A has nothing to save and skips this step.
+
+## Step 5 — Apply
+
+In this order, each step create-when-missing / merge-when-present:
+
+1. Folders — `mkdir -p` each, quoted.
+2. Templates («Templates»).
+3. Obsidian settings («Obsidian»).
+4. `.claude/settings.json` («Settings»).
+5. `CLAUDE.md` («CLAUDE.md»).
+6. `areas.md`; `adapter.md` for `mcp` (`mcp-generic.md` step 8).
+7. `vault.md` — last.
+
+Config files are written from `config.example/<file>`, keeping its title, its «Keys»
+table and every section after it, and dropping the paragraphs addressed to someone
+filling in the form (the one opening with bold «Vault-specific», and «Fill this in from
+scratch»). In the table, every *italic placeholder* is replaced by the value **in
+backticks** — ``| `LANG` | `en` |`` — and an empty value leaves the cell empty
+(`IGNORE` in scenario A, `GROUPS` under `GROUPING = none`); a list is the backticked
+items separated by commas. `REPO_ROOT` is the absolute path, no `~`. `SCHEMA` is the
+current one from `migrations.md`.
+
+A step that fails is reported as it is, and the steps after it still run. `vault.md` is
+withheld only when a PARA folder or a template could not be written — without them the
+vault is not there. Any other failure (`areas.md`, `adapter.md`, a merge into
+`CLAUDE.md`, `.claude/settings.json` or `.obsidian/`) does not hold it back: the report
+names it, the skills stop on a missing `areas.md` or `adapter.md` by themselves, and the
+next run fills the gap. Writes into `.claude/` may need the user's permission; a
+refusal is a failure like any other, reported and never worked around.
+
+## Step 6 — Report
+
+Headed by the `init.report.heading` string: what was created or changed, as short paths.
+Then the `init.report.skipped` string and what was not done, each with its reason (a
+template kept because it was already there, an Obsidian value the user kept, a backend
+that did not answer). End with one line on what to try next: `/para:inbox add …`,
+`/para:vault-lint`. When `TASKS` has an app behind it, say that `init` did not create
+the `AREA_TASK_PROJECTS` projects in it — the user creates them when first needed.
+
+---
+
+## The pieces
+
+### Templates
+
+Copy each file of `templates/<LANG>/` into `PARA_ROOT/Templates/` **only when that file
+is missing there**. A template already present belongs to the vault — the vault's
+`Templates/` is what `note-format.md` reads, and the user may have edited it — and is
+never replaced, except by a migration (`migrations.md`). Changes made while copying, so
+that the copy matches the schema of this vault (`note-format.md` «Frontmatter schema»):
+
+- `Task.md` — copied only when `TASKS` is `files`. Under any other backend a task
+  template contradicts «`Tasks/` is legacy» (`note-format.md`).
+- `Area.md` — the seed's grouping key `sphere:` is renamed to the `GROUPING` field
+  name; with `GROUPING = none` the line is removed.
+- `Project.md` — with `GROUPING = none` the `area:` line is removed; under
+  `pairing: none` (the adapter's, `tasks.md` «Pairing») the `tasks_ref:` line is removed.
+
+Nothing else in a template changes.
+
+### Obsidian
+
+`.obsidian/` sits in `REPO_ROOT` (`paths.md`). Merge — read the file, set only the keys
+below, keep every other key and value, write valid JSON; create the file (and the
+folder) when missing:
+
+| File | Key | Value |
+|---|---|---|
+| `app.json` | `newFileLocation` | `"folder"` |
+| `app.json` | `newFileFolderPath` | `"<PARA_DIR>/Inbox"`, or `"Inbox"` when `PARA_DIR` is `.` (`paths.md`) |
+| `app.json` | `alwaysUpdateLinks` | `true` |
+| `app.json` | `userIgnoreFilters` | contains `"CLAUDE.md"` — appended, other entries kept |
+| `templates.json` | `folder` | `"<PARA_DIR>/Templates"`, or `"Templates"` when `PARA_DIR` is `.` |
+
+A key already holding a different value is a plan line of its own (old → new). If the
+user keeps the old value, keep it and say in the report what follows from it (new files
+from Obsidian land elsewhere; links stop updating on rename).
+
+### Settings
+
+Merge into `REPO_ROOT/.claude/settings.json` — never replace it. Add each of these to
+`permissions.allow` when it is not there yet, keeping every other key and entry. They
+are the read-only commands the skills run:
+
+`Bash(find:*)`, `Bash(grep:*)`, `Bash(stat:*)`, `Bash(cat:*)`, `Bash(ls:*)`,
+`Bash(sed:*)`, `Bash(head:*)`, `Bash(tail:*)`, `Bash(sort:*)`, `Bash(uniq:*)`,
+`Bash(wc:*)`, `Bash(diff:*)`, `Bash(basename:*)`, `Bash(date:*)`, `Bash(tr:*)`
+
+Nothing else in the file is touched: no permission is removed, none that writes is added.
+
+### CLAUDE.md
+
+The block is the text from `<!-- para:begin -->` to `<!-- para:end -->` in
+`claude-md-block.md`, both markers included, verbatim.
+
+- No `CLAUDE.md` → create it holding the block.
+- `CLAUDE.md` without the markers → append a blank line and the block at the end.
+- The markers present once each, the text between them identical → nothing to do.
+- The markers present, the text differs → a plan line of its own (Tier 2): replace what
+  is between them. Everything outside the markers is never touched.
+- A marker missing its pair, or present twice → touch nothing; report it.
+
+---
+
+## Re-run and migration
+
+`vault.md` exists. The config is never overwritten, and its questions are not asked
+again: their answers are in it.
+
+1. **Read `vault.md`.** If its `REPO_ROOT` is not this folder, the vault has moved: a
+   plan line of its own (Tier 2) to update that one key.
+2. **Compare `SCHEMA`** with `migrations.md`. Higher → say the `common.schema_ahead`
+   string and stop. Lower or missing → the steps `migrations.md` lists for each version
+   up to the current one join the plan, run as it says.
+3. **Check every piece** of «Step 5» against the disk with the stored values: missing
+   folders, missing templates (`Task.md` only under `files`), `areas.md` (missing → ask
+   question 4 only), `adapter.md` under `mcp` (missing → the `mcp-generic.md` procedure),
+   the Obsidian keys, the permissions, the `CLAUDE.md` block. Only what is missing or
+   different joins the plan.
+4. **Probe** the backend (read-only, as in Step 2) and say the result; a failure is
+   reported and changes nothing in the config.
+5. An answer given in advance that disagrees with `vault.md` is not applied: say which
+   value the vault keeps, and that changing it is an edit to `vault.md`, not a re-run.
+6. **Nothing missing** → say the `init.nothing_to_do` string and stop. Write nothing — not
+   even a file rewritten with the same content.
+7. Otherwise the plan, the «yes», the application and the report, as on a first run.
+
+---
+
+## Scenario A — an empty folder
+
+Steps 2, 3, 5 and 6 as above, with `PARA_DIR` defaulting to `PARA`. Every file and
+folder is new, so the plan is additions only (an approval given in advance applies),
+except where an existing `.obsidian/` or `CLAUDE.md` holds a different value.
+
+## Scenario B — an existing Obsidian vault
+
+**Not supported by this version yet.** Name the scenario, say that it is not supported
+yet and that nothing was changed, and stop. (Planned: `PARA_DIR` defaulting to `.`,
+classifying folders into PARA, the snapshot, `IGNORE`.)
+
+## Scenario C — a vault with the old embedded tooling
+
+**Not supported by this version yet.** Name the scenario, say that it is not supported
+yet and that nothing was changed, and stop. (Planned: moving the old config into
+`.claude/para/`, renaming the pair field to `tasks_ref`, the snapshot, retiring the
+embedded skills.)

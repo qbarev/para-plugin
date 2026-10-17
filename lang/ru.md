@@ -37,6 +37,8 @@ project.outcome.completed: Завершён.
 project.outcome.abandoned: Брошен: {reason}.
 archive.no_outcome: без отметки
 common.no_metadata: без метаданных
+common.schema_behind: Схема хранилища — версия {vault}, а плагин ждёт {plugin}: запусти `/para:init`, чтобы выполнить миграцию.
+common.schema_ahead: Схема хранилища — версия {vault}, новее, чем у плагина ({plugin}): обнови плагин.
 
 ## Tasks
 
@@ -137,3 +139,11 @@ lint.pair_lost: пара потеряна: проекта в менеджере 
 lint.pair_closed: в менеджере задач закрыт, в хранилище нет
 lint.unpaired_counts: в хранилище {vault}, в менеджере задач {backend}
 lint.clean: Дублей id, ссылок на несуществующие проекты, заметок в корне и потерянных пар нет.
+
+## Init
+
+init.plan.heading: План
+init.plan.approve: Применить план? Ответь «да» или скажи, что поменять.
+init.report.heading: Готово
+init.report.skipped: Пропущено
+init.nothing_to_do: Всё на месте — менять нечего.

@@ -26,6 +26,15 @@ from the vault root". Never guess a root from the working directory, never fall 
 to a default, and never write config or notes anywhere else: a wrong root writes notes
 into the wrong vault.
 
+**Schema version.** Right after reading `vault.md`, compare its `SCHEMA` with
+«Current schema» in `migrations.md`. Every skill except `/para:init` does this before
+anything else and stops on a mismatch, writing nothing — a skill running against a
+schema it was not written for half-works, which is worse than stopping:
+
+- `SCHEMA` lower than the plugin's, or missing → say the `common.schema_behind` string
+  (`{vault}` = the vault's value, `0` when missing; `{plugin}` = the plugin's) and stop.
+- `SCHEMA` higher than the plugin's → say the `common.schema_ahead` string and stop.
+
 ## Language
 
 `LANG` in `vault.md` is the language of the vault: a code with a file `lang/<LANG>.md`

@@ -162,7 +162,7 @@ fi
 # names of tasks.md (`project.create`, `inbox.add` ...) share prefixes with keys and are
 # skipped; `*.md` tokens are files; a token ending in `.*` names a group of keys and
 # needs at least one member.
-nsre='(project|common|area|resource|note|task|count|inbox|archive|overview|list|areas|lint)'
+nsre='(project|common|area|resource|note|task|count|inbox|archive|overview|list|areas|lint|init)'
 if [ -f lang/en.md ]; then
   while IFS=: read -r f ln tok; do
     tok=${tok//\`/}
@@ -199,6 +199,32 @@ for l in "${langs[@]}"; do
     cat templates/$l/*.md 2>/dev/null | grep -qxF "# $v" || report "templates: no template in templates/$l has the heading '# $v' ($k)"
   done
 done
+
+# Check 12: init's inputs. The CLAUDE.md block carries each marker exactly once, begin
+# before end; migrations.md states the current SCHEMA once and has a section for it.
+if [ -f para/claude-md-block.md ]; then
+  nb=$(grep -cxF '<!-- para:begin -->' para/claude-md-block.md)
+  ne=$(grep -cxF '<!-- para:end -->' para/claude-md-block.md)
+  lb=$(grep -nxF '<!-- para:begin -->' para/claude-md-block.md | cut -d: -f1)
+  le=$(grep -nxF '<!-- para:end -->' para/claude-md-block.md | cut -d: -f1)
+  if [ "$nb" != 1 ] || [ "$ne" != 1 ]; then
+    report "claude-md-block: each marker must appear exactly once on a line of its own"
+  elif [ "$lb" -ge "$le" ]; then
+    report "claude-md-block: para:begin must come before para:end"
+  fi
+else
+  report "claude-md-block: para/claude-md-block.md does not exist"
+fi
+if [ -f para/migrations.md ]; then
+  sv=$(grep -E '^SCHEMA: [0-9]+$' para/migrations.md)
+  if [ "$(printf '%s\n' "$sv" | grep -c .)" != 1 ]; then
+    report "migrations: para/migrations.md must state 'SCHEMA: <n>' exactly once"
+  else
+    grep -qx "### ${sv#SCHEMA: }" para/migrations.md || report "migrations: no '### ${sv#SCHEMA: }' section for the current schema"
+  fi
+else
+  report "migrations: para/migrations.md does not exist"
+fi
 
 # Check 4 (R7): optional denylist of personal terms, one per line, kept outside the repo.
 if [ -z "${PARA_DENYLIST:-}" ]; then
