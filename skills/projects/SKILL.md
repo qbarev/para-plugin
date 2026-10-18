@@ -220,8 +220,8 @@ surfaces something worth fixing, say so and let the user decide.
 
 4. **Order** per `thresholds.md` «Project order».
 
-5. **Render, in `LANG`**, with the `list.*`, `count.*` and `task.unpaired` strings
-   (header `list.header`, deadline `list.until` with the date in `common.date_short` and,
+5. **Render, in `LANG`**, with the `list.*`, `count.*` and `task.unpaired` strings — the
+   line is tight, so the backlog count is `count.backlog_short` (header `list.header`, deadline `list.until` with the date in `common.date_short` and,
    inside the horizon of `thresholds.md`, ` (14 d)` after it: the days to go and
    `common.unit.day`); shown here with the English strings:
 

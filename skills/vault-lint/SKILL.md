@@ -280,7 +280,15 @@ the vault is allowed to be in.
 
 - **`lint.finding.no_frontmatter`** — they predate the convention. `CLAUDE.md` says to leave
   them alone, so this is a count and a list, never a migration offer. Do not repeat the
-  full list on every run if it is long — give the count and the folders.
+  full list on every run if it is long — give the count and the folders. Count with the
+  command, never by reading notes one by one — a hand count drifts from run to run:
+
+  ```bash
+  find "$PARA_ROOT" -name "*.md" -not -path "*/.*" -not -path "*/Templates/*" \
+       | not_ignored | while IFS= read -r f; do
+    [ "$(head -n 1 "$f")" = "---" ] || echo "${f#"$PARA_ROOT"/}"
+  done
+  ```
 
 ---
 
