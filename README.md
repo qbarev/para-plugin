@@ -11,7 +11,7 @@ Work in progress.
 - `config.example/` — templates for the vault's own config, which lives in the vault at `.claude/para/` (`vault.md`, `areas.md`).
 - `lang/<LANG>.md` — every fixed string the skills write to a note or print to chat (`ru` and `en` ship), the same keys in every file; `LANG` in the vault's `vault.md` picks the file.
 - `templates/<LANG>/` — seed note templates (`Project`, `Area`, `Resource`, `Note`, and `Task` for `TASKS = files`); the vault's own `Templates/` is the source of truth.
-- `evals/` — `claude plugin eval` cases; `evals/fixtures/legacy/` and `evals/fixtures/files/` (`TASKS = files`) are synthetic vaults staged under a directory whose name contains a space; `evals/fixtures/init-a-done/` is a vault as `/para:init` scenario A left it.
+- `evals/` — `claude plugin eval` cases; `evals/fixtures/legacy/` and `evals/fixtures/files/` (`TASKS = files`) are synthetic vaults staged under a directory whose name contains a space; `evals/fixtures/init-a-done/` is a vault as `/para:init` scenario A left it; `evals/fixtures/arbitrary/` is an existing Obsidian vault of ~50 synthetic notes for scenario B, staged by `evals/fixtures/stage-arbitrary.sh`, and `evals/fixtures/init-b-done/` is that vault as scenario B left it. `tests/hash-notes.sh <dir>` prints a hash per note keyed by basename, so a vault's notes can be compared before and after `/para:init` (a pure move leaves the output unchanged).
 
 ## Tests
 

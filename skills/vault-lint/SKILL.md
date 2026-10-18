@@ -30,6 +30,13 @@ compare by collation, and non-Latin names (Cyrillic, say) can collate as equal w
 then reports duplicates that do not exist, and `sort -u` silently drops distinct link
 targets. Byte comparison is the only correct one here.
 
+**`IGNORE`** (`paths.md` «IGNORE») — the paths PARA leaves alone. Define `ignore_list`
+and `not_ignored` as `paths.md` gives them. Three checks pipe their hits through
+`not_ignored`: `lint.finding.notes_in_repo_root`, `lint.finding.extra_folders` and
+`lint.finding.orphans`. `lint.finding.duplicate_names` deliberately does **not**: links
+resolve across the whole vault, ignored paths included. `--fix` never edits an ignored
+path.
+
 **Exclude `Templates/` from every check.** This includes the `id`, `project:` and
 `REPO_ROOT` commands, which recurse into it unless told otherwise. A template is supposed to contain `{{title}}`
 and bare `project/` placeholders — that is its job. Checking it produces a false positive
@@ -73,7 +80,8 @@ diff <(grep -hoE '^\| `[A-Z_]+`' "$SKILL_DIR/../../config.example/"*.md | sort) 
   same way.
 
 **`lint.finding.duplicate_names`.** Wikilinks resolve by basename, so two files with the same name
-make every link to that name ambiguous. Check across `REPO_ROOT`, not just `PARA_ROOT`.
+make every link to that name ambiguous. Check across `REPO_ROOT`, not just `PARA_ROOT`,
+and **including** `IGNORE` (`paths.md` «IGNORE»).
 
 ```bash
 find "$REPO_ROOT" -name "*.md" -not -path "*/.*" -not -path "*/Templates/*" -exec basename {} \; | sort | uniq -d
@@ -108,8 +116,8 @@ path prefix.
 
 ```bash
 find "$REPO_ROOT" -maxdepth 1 -name "*.md" \
-  ! -name "CLAUDE.md" ! -name "README.md" ! -name "CHANGELOG.md"
-find "$REPO_ROOT" -mindepth 1 -maxdepth 1 -type d ! -name ".*" ! -name "$PARA_DIR"
+  ! -name "CLAUDE.md" ! -name "README.md" ! -name "CHANGELOG.md" | not_ignored
+find "$REPO_ROOT" -mindepth 1 -maxdepth 1 -type d ! -name ".*" ! -name "$PARA_DIR" | not_ignored
 ```
 
 With `PARA_DIR = .` the PARA folders sit directly in `REPO_ROOT`, so the second command is
@@ -127,7 +135,7 @@ folder created from Obsidian — holds notes no skill will ever look at.
 ```bash
 find "$PARA_ROOT" -mindepth 1 -maxdepth 1 -type d ! -name ".*" \
   ! -name "Inbox" ! -name "Projects" ! -name "Areas" ! -name "Resources" \
-  ! -name "Archive" ! -name "Templates"
+  ! -name "Archive" ! -name "Templates" | not_ignored
 ```
 
 **`lint.finding.inbox_files`.** Skip under `TASKS = files` (`paths.md`: there every file is a capture, not a finding). Otherwise the folder is Obsidian's fallback, not a destination (`paths.md`);
@@ -250,7 +258,7 @@ the vault is allowed to be in.
 
   ```bash
   find "$PARA_ROOT" -name "*.md" -not -path "*/.*" -not -path "*/Templates/*" \
-       -not -path "*/Tasks/*" | while IFS= read -r f; do
+       -not -path "*/Tasks/*" | not_ignored | while IFS= read -r f; do
     b=$(basename "$f" .md)
     grep -rqlF "[[$b" "$PARA_ROOT" --include="*.md" --exclude-dir=Templates || echo "$b"
   done
@@ -307,10 +315,10 @@ Only the repairs with exactly one correct answer:
 - tag placeholders — fill the slug from the note's title
 - missing project subfolders — create the empty folder
 
-Everything else is reported, never fixed: a duplicate basename needs a naming decision,
-a dangling link needs to know whether the target was renamed or dropped, a lost backend
-pair needs to know which side is right, and legacy fields are removed only in the
-migration with the user.
+None of them touches a path under `IGNORE`. Everything else is reported, never fixed:
+a duplicate basename needs a naming decision, a dangling link needs to know whether the
+target was renamed or dropped, a lost backend pair needs to know which side is right,
+and legacy fields are removed only in the migration with the user.
 
 Editing notes is Tier 2 (`confirm.md`): list every intended edit, wait for a yes, then
 apply. Re-run the check afterwards and show what remains.

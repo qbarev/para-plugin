@@ -147,3 +147,12 @@ init.plan.approve: Apply this plan? Answer «yes», or say what to change.
 init.report.heading: Done
 init.report.skipped: Skipped
 init.nothing_to_do: Everything is in place — nothing to change.
+init.b.question: {folder} — {n|note|notes}: project, area, resource, archive, or leave as is?
+init.b.leave: leave as is
+init.b.duplicates: The same name in more than one place. These notes stay where they are until you decide:
+init.b.duplicates_choice: leave them where they are, or stop here: rename one in Obsidian (it updates the links) and run /para:init again
+init.b.moves: Moves
+init.b.ignore: Stay where they are (IGNORE)
+init.b.links: Links that stop working after the moves (init does not edit notes; fix them in Obsidian):
+init.b.checkboxes: Notes with checkboxes, left untouched: {n}
+init.snapshot: Make a zip copy of the vault first, at {path}? (yes / no)

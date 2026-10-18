@@ -17,7 +17,7 @@ that rule).
 | `LANG` | *a language code that has `lang/<LANG>.md` in the plugin (`ru`, `en`) — the language of notes and of what is printed to chat* |
 | `TASKS` | *`todoist`, `files` or `mcp` — where tasks live* |
 | `SCHEMA` | *integer, starts at `1` — the vault schema version; a plugin with a higher one asks for a migration* |
-| `IGNORE` | *paths relative to `REPO_ROOT` that PARA never touches, one per line; may be empty* |
+| `IGNORE` | *paths relative to `REPO_ROOT` that PARA never touches (`paths.md` «IGNORE»), each in backticks, separated by commas; may be empty* |
 
 `PARA_ROOT` is not a key: it is `$REPO_ROOT/$PARA_DIR`, with `.` meaning `REPO_ROOT`
 itself. Deriving it keeps `.obsidian/app.json` (`newFileFolderPath`) and

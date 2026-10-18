@@ -24,6 +24,8 @@ defines them.
 | the plugin's block | `REPO_ROOT/CLAUDE.md` | between the markers only («CLAUDE.md») |
 | the skills' permissions | `REPO_ROOT/.claude/settings.json` | merged, never replaced («Settings») |
 | Obsidian settings | `REPO_ROOT/.obsidian/app.json`, `templates.json` | merged («Obsidian») |
+| the user's notes and folders (B only) | from where they are into the PARA folders | **moved, never edited** — only the moves the approved plan lists («Scenario B») |
+| project overviews (B only) | `PARA_ROOT/Projects/PROJ-xxxx <title>/` | new, for a folder the user called a project («Scenario B») |
 
 ## Base layer
 
@@ -40,6 +42,9 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 - `../../para/claude-md-block.md` — the block for `CLAUDE.md`
 - `../../para/confirm.md` — the tiers; the plan below is how `init` meets them
 - `../../config.example/vault.md`, `areas.md`, `adapter.md` — the shape of the config
+- scenario B only: `../../para/move.md` (how a move keeps links), `../../para/project-id.md`
+  (issuing an id), `../../para/thresholds.md` (the area-staleness threshold and «The limit
+  of mtime»), `paths.md` «IGNORE»
 - `../../lang/<LANG>.md` once `LANG` is known: the `init.*` strings
 
 `SKILL_DIR` below is this skill's base directory, as the harness announces it.
@@ -65,7 +70,8 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 ## Answers given in advance
 
 `$ARGUMENTS` may already carry answers: the language, `PARA_DIR` («the default» means
-the proposed one), the task backend, the Areas model, the snapshot answer, and an
+the proposed one), the task backend, the Areas model, in scenario B the sorting answers
+(per folder or root note, and for the duplicate names), the snapshot answer, and an
 approval of the plan. Take every answer given and **do not ask it again**; ask only
 what is missing. An answer that is not a valid choice is asked again, saying why.
 
@@ -75,6 +81,12 @@ entry). A line that changes or replaces something that already exists (a differi
 Obsidian value, a different `CLAUDE.md` block, a template in a migration, `REPO_ROOT`
 in an existing `vault.md`) is Tier 2 (`confirm.md`): the plan is shown and `init` waits
 for a «yes» even then.
+
+Scenario B's moves do not count as such lines: a move changes where a note is, never
+what it says, and `confirm.md` puts moving in Tier 1. They are covered by the plan's
+«yes», given then or in advance — the snapshot is offered before them all the same
+(Step 4). A sorting question answered in advance is not asked; one left unanswered is
+asked, and nothing is applied before its answer, approval or not.
 
 ---
 
@@ -143,8 +155,9 @@ shows its choices and, where there is one, the default.
    ```
 
 2. **PARA folder** (`PARA_DIR`). Default per scenario: A — `PARA`, a subfolder, so the
-   tooling and the notes stay apart. `.` puts the PARA folders straight into
-   `REPO_ROOT`. Valid: `.` or one folder name — no `/`, not starting with `.`, not one
+   tooling and the notes stay apart; B — `.`, so the PARA folders sit next to the
+   user's own folders, except as «Scenario B» says. `.` puts the PARA folders straight
+   into `REPO_ROOT`. Valid: `.` or one folder name — no `/`, not starting with `.`, not one
    of the PARA folder names themselves.
 
 3. **Task backend** (`TASKS`). The choices are `todoist`, `files` or `mcp`; the first is
@@ -197,6 +210,8 @@ The plan names, in this order:
 1. `REPO_ROOT` (this folder) and `PARA_ROOT`.
 2. The folders to create.
 3. The templates to copy, each with the changes «Templates» makes to it.
+   In scenario B, here: the moves, the projects, `IGNORE`, the held duplicates and the
+   links that will break («Scenario B», «The plan's B part»).
 4. The config: every key of `vault.md` and `areas.md` with its value; for `mcp`, the
    adapter table (`mcp-generic.md` step 7 — the plan's «yes» is that table's «yes»).
 5. `CLAUDE.md`, `.claude/settings.json`, `.obsidian/app.json`, `.obsidian/templates.json`:
@@ -208,7 +223,8 @@ The plan names, in this order:
 ## Step 4 — Snapshot (B and C only)
 
 Before applying a plan that touches an existing vault, offer a zip copy next to it —
-always asked, refusal accepted, an answer given in advance taken:
+always asked, refusal accepted, an answer given in advance taken. It is asked in the same
+message as the plan's approval (the `init.snapshot` string), so the user answers once:
 
 ```bash
 zip_path="$(dirname "$REPO_ROOT")/$(basename "$REPO_ROOT")-backup-$(date +%Y-%m-%d).zip"
@@ -223,6 +239,9 @@ In this order, each step create-when-missing / merge-when-present:
 
 1. Folders — `mkdir -p` each, quoted.
 2. Templates («Templates»).
+   - Scenario B: then the moves and the projects («Scenario B», «B4»).
+     They need the folders and `Templates/Project.md` in place, and they come before
+     anything is written outside the PARA folders.
 3. Obsidian settings («Obsidian»).
 4. `.claude/settings.json` («Settings»).
 5. `CLAUDE.md` («CLAUDE.md»).
@@ -252,7 +271,8 @@ refusal is a failure like any other, reported and never worked around.
 Headed by the `init.report.heading` string: what was created or changed, as short paths.
 Then the `init.report.skipped` string and what was not done, each with its reason (a
 template kept because it was already there, an Obsidian value the user kept, a backend
-that did not answer). End with one line on what to try next: `/para:inbox add …`,
+that did not answer). In scenario B, also the B part of the report («Scenario B»).
+End with one line on what to try next: `/para:inbox add …`,
 `/para:vault-lint`. When `TASKS` has an app behind it, say that `init` did not create
 the `AREA_TASK_PROJECTS` projects in it — the user creates them when first needed.
 
@@ -348,9 +368,13 @@ again: their answers are in it.
    A Tier 2 line the user declined on an earlier run (an Obsidian value, the
    `CLAUDE.md` block) is shown again, once per run, as a plan line; declined again, the
    report says the old value was kept.
-6. **Nothing missing** → say the `init.nothing_to_do` string and stop. Write nothing — not
+6. **A re-run never sorts notes again.** Scenario B happens once, on the first run:
+   the `IGNORE` list, the folders the user left as they are and anything added since
+   are not reclassified, and the sorting answers in `$ARGUMENTS` are not used. Notes
+   outside the PARA folders are `/para:vault-lint`'s to report.
+7. **Nothing missing** → say the `init.nothing_to_do` string and stop. Write nothing — not
    even a file rewritten with the same content.
-7. Otherwise the plan, the «yes», the application and the report, as on a first run.
+8. Otherwise the plan, the «yes», the application and the report, as on a first run.
 
 ---
 
@@ -362,9 +386,188 @@ except where an existing `.obsidian/` or `CLAUDE.md` holds a different value.
 
 ## Scenario B — an existing Obsidian vault
 
-**Not supported by this version yet.** Name the scenario, say that it is not supported
-yet and that nothing was changed, and stop. (Planned: `PARA_DIR` defaulting to `.`,
-classifying folders into PARA, the snapshot, `IGNORE`.)
+The folder holds notes this plugin did not write. `init` sorts what is obvious into PARA
+itself, asks about what is disputed — in groups — and moves; nothing else. Steps 2–6
+run as above, with the additions below. `PARA_DIR` defaults to `.`.
+
+**The rule over everything else: a note is never changed.** Not its body, not its
+frontmatter, not its name, and none is deleted — `note-format.md` «Notes predating the
+convention». Checkboxes are left as they are. The only thing done to a user's note or
+folder is a plain move (`move.md`), only of what the approved plan lists, never onto an
+existing path. Everything `init` writes is a new file: the PARA folders, the templates,
+the project overviews, the config.
+
+### A vault with nothing to sort
+
+A new Obsidian vault holds one note, Obsidian's own `Welcome.md`, at its top level. When
+that is the only note found, there is nothing to sort: say so, and run scenario A
+(`PARA_DIR` defaulting to `PARA`, no snapshot) with one more plan line — `Welcome.md`
+stays where it is and joins `IGNORE`. The user may delete it instead; `init` does not.
+
+### B1 — Survey
+
+Read-only, before the setup questions, so that question 2's default is known.
+
+```bash
+# the units: every top-level entry but the dot-entries and the repository's own files
+find "$REPO_ROOT" -mindepth 1 -maxdepth 1 ! -name '.*' \
+  ! -name CLAUDE.md ! -name README.md ! -name CHANGELOG.md | sort
+# every file outside the dot-entries, with its mtime: counts per folder, newest change
+find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -exec stat -f '%m %N' {} +
+# what Obsidian says: the attachments, daily-notes and templates folders
+cat "$REPO_ROOT/.obsidian/app.json" "$REPO_ROOT/.obsidian/daily-notes.json" \
+    "$REPO_ROOT/.obsidian/templates.json" 2>/dev/null
+# notes with checkboxes; notes with an unticked one
+find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -name '*.md' -print0 \
+  | xargs -0 grep -lE '^[[:space:]]*[-*+] \[[ xX]\]' /dev/null
+find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -name '*.md' -print0 \
+  | xargs -0 grep -lE '^[[:space:]]*[-*+] \[ \]' /dev/null
+# basenames that occur more than once
+find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -name '*.md' -print \
+  | sed 's|.*/||' | LC_ALL=C sort | LC_ALL=C uniq -d
+# links that carry a path: wikilinks and embeds with a folder in them, markdown links
+find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -name '*.md' -print0 \
+  | xargs -0 grep -nHoE '!?\[\[[^]|#]*/[^]]*\]\]|\]\([^)]+\)' /dev/null \
+  | grep -vE '\]\((https?|mailto|obsidian|file):|\]\(#'
+```
+
+**The PARA folders already there.** When `REPO_ROOT` already has a folder named like a
+PARA folder (`Projects`, `Areas`, `Resources`, `Archive`, `Inbox`, `Templates`), `.`
+would pour the user's folder into PARA's: the default `PARA_DIR` is then `PARA`, and
+question 2 says why. If `PARA` exists too, question 2 has no default. With `PARA_DIR`
+a subfolder, every destination below is under `PARA_ROOT` as usual.
+
+### B2 — Classify
+
+**The unit is a folder, not a note.** Each top-level folder is one unit with everything
+under it. A folder one rule below decides as a whole moves as one. A **mixed** folder —
+its notes do not all fall under one rule — is split once: the notes directly in it that a
+rule decides go their own way, one by one; the rest of it (its other notes and its
+subfolders) is one disputed unit. Each note at the top level is a unit of its own.
+Non-note files at the top level stay and join `IGNORE`.
+
+The rules, first match wins:
+
+| # | Unit | Signs | Goes |
+|---|---|---|---|
+| 1 | daily notes | the `folder` of `.obsidian/daily-notes.json`; or notes named by date (`2026-09-01.md`) | stays, `IGNORE` |
+| 2 | attachments | the `attachmentFolderPath` of `.obsidian/app.json`; or a folder of files with no note in it | stays, `IGNORE` |
+| 3 | the user's Obsidian templates | the `folder` of `.obsidian/templates.json`; or notes made of `{{date}}`, `{{title}}` placeholders | stays, `IGNORE` — never mixed into the plugin's `Templates/` |
+| 4 | reference | named as one (reference, cheat sheet, glossary, how-to, wiki — in any language), or reading as one: commands, definitions, links, quotes; no unticked checkbox, no date ahead | `Resources/<name>` |
+| 5 | finished | its newest file untouched for longer than the area-staleness threshold (`thresholds.md`), and no sign of active work: no unticked checkbox, no date from today on | `Archive/<name>` |
+| 6 | anything else | — | disputed: asked (B3) |
+
+- A folder that reads as a project — a goal, an end, open checkboxes — is never obvious:
+  it becomes a project only on the user's «yes» (rule 6).
+- When every file's mtime falls inside one hour (a copy or a sync — `thresholds.md`
+  «The limit of mtime»), rule 5 decides nothing: those units are asked.
+- **Duplicates come before the rules.** Every note whose basename occurs more than once
+  across `REPO_ROOT` stays where it is and is in no move, whatever its folder does: a
+  folder that moves while holding one is moved entry by entry around it, and stays
+  behind holding it (B4). The duplicates are asked about (B3). This is `move.md`: a
+  move is safe only while the basename is unique.
+- **Collisions.** A destination that already exists, or a project overview name that
+  already exists anywhere under `REPO_ROOT` (`note-format.md` «Name collisions»), holds
+  that unit: it is asked about, with the reason, and never moved onto.
+
+### B3 — Questions
+
+After the setup questions, **one message** with every disputed unit, numbered:
+
+1. the folders, largest first (by notes), each as the `init.b.question` string, with what
+   helps to answer — how long it has been unchanged (the span, never a verdict:
+   `thresholds.md`), two or three note names, how many notes carry checkboxes, and
+   `init`'s guess when it has one;
+2. the top-level notes, one line each, with the same choices;
+3. the duplicates: the `init.b.duplicates` string, each name with all its paths, and the
+   `init.b.duplicates_choice` string.
+
+The user answers them all in one reply. **Never one question per note inside a folder**
+— a flood of questions is as unpredictable as silent decisions. If the user wants a
+folder split, they say how; `init` never proposes it note by note. Answers:
+
+- **project** → «Projects» below.
+- **area** → `Areas/<name>`; when `GROUPING` is not `none`, under the group the user
+  names, `Areas/<GROUP>/<name>` (Tier 1.5 if not named). The notes move as they are; no
+  area note is written for them — the report suggests `/para:areas create`.
+- **resource** → `Resources/<name>`; **archive** → `Archive/<name>`.
+- **leave as is** (`init.b.leave`) → stays, joins `IGNORE`.
+- **duplicates, leave** → every copy stays and its path joins `IGNORE` — or, for a copy
+  left behind in a folder that otherwise moved, that folder's path, since the copy is all
+  it still holds (otherwise `/para:vault-lint` reports the folder as stray); say that
+  `/para:vault-lint` keeps reporting the name until one is renamed (`paths.md` «IGNORE»).
+  **Duplicates, stop** → stop the whole run: nothing is written, and the next run is a
+  first run again. `init` never renames a note itself.
+
+### Projects
+
+A folder becomes a project only on the user's «yes» for that folder. Then:
+
+- the id is issued per `project-id.md`, one per project in plan order;
+- the title is the folder's name, cleaned as `note-format.md` «Title and filename» says;
+  `short` is proposed in the plan (`note-format.md` «Filling fields»);
+- the new folder is `Projects/PROJ-xxxx <title>/` with `Notes/`, `Resources/`, `Results/`
+  (`paths.md` «Map»). Every entry of the old folder moves into `Notes/` as it is —
+  subfolders and attachments too — except a held duplicate. The emptied old folder is
+  removed with `rmdir`, which refuses one that is not empty; never `rm -r`;
+- the overview `PROJ-xxxx <title>.md` is written from the vault's
+  `Templates/Project.md` (copied in Step 5.2 of this run, or the vault's own) per
+  `note-format.md`: title, `short`, id, the tag slug, `created` today. Every other field
+  and section stays blank — `init` adopts a folder and does not invent a goal;
+- `project.create` runs only under `pairing: separate` (`tasks.md` «Pairing»), and its
+  id goes into the new overview's `tasks_ref`. A failed call leaves the project
+  unpaired and is reported (`tasks.md` «Backend missing»).
+
+### The plan's B part
+
+At the plan's item 3, each block headed by its string:
+
+- `init.b.moves` — one line per move, `from → to`, grouped by destination; a folder
+  moved whole is one line; a folder moved around a held duplicate says what stays.
+  A project line names the new folder, its id, its `short` and the overview. Then the
+  totals: moves, notes moved.
+- `init.b.ignore` — every path that joins `IGNORE`, each with why.
+- `init.b.duplicates` — the names, their paths, the answer.
+- `init.b.links` — every link the moves break: the note, the line, the link. A link
+  breaks when its target moves, or when it is a relative markdown link and its note
+  moves while its target does not (a link inside a folder that moves whole keeps
+  working). Resolve a wikilink's path from `REPO_ROOT`, a markdown link's (`%20` is a
+  space) from its note's folder, then from `REPO_ROOT`. «None» when there are none.
+
+### B4 — Applying the B part
+
+At Step 5.2, line by line in plan order. Each move checks first and never forces:
+
+```bash
+src="$REPO_ROOT/<from>"; dest="$PARA_ROOT/<to>"
+if [ -e "$dest" ]; then echo "exists, not moved: $dest"
+elif [ ! -e "$src" ]; then echo "gone, not moved: $src"
+else mkdir -p "$(dirname "$dest")" && mv "$src" "$dest"; fi
+```
+
+A folder holding a held duplicate is moved entry by entry: `mkdir -p "$dest"`, then the
+same check and `mv` for each entry of `find "$src" -mindepth 1 -maxdepth 1`, skipping the
+duplicate (and descending into the subfolder that holds it, if it is deeper).
+
+Then check that nothing was lost: every note the survey found is at its old path or at
+its planned new one, and the number of notes outside the dot-entries is the survey's
+count plus the files `init` created:
+
+```bash
+find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -name '*.md' -print | wc -l
+```
+
+A mismatch is reported first in the report, with the paths. The `IGNORE` entries go
+into `vault.md` at Step 5.7: paths relative to `REPO_ROOT`, as `paths.md` «IGNORE»
+spells the value.
+
+### The report's B part
+
+- what moved: the count per destination, the projects with their ids;
+- what stays (`IGNORE`), and the duplicates left in place;
+- the `init.b.links` list again — these links are broken now;
+- the `init.b.checkboxes` string with the count, and the folders those notes sit in;
+- the snapshot's path, if one was made.
 
 ## Scenario C — a vault with the old embedded tooling
 

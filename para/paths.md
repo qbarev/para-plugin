@@ -152,6 +152,29 @@ Service files (dotfiles — Obsidian ignores them, they are not notes):
 |---|---|
 | Journal of ids freed by deletion | `Archive/.removed-ids` |
 
+## IGNORE — what PARA leaves alone
+
+`IGNORE` in `vault.md` lists paths, relative to `REPO_ROOT`, that PARA never touches:
+daily notes, attachments, the user's own Obsidian templates, and whatever the user
+told `/para:init` to leave as it is. `/para:init` fills it when it adopts an existing
+vault; the user may edit it. A path is ignored when it **is** an entry or lies
+**under** one (`Daily` covers `Daily/2026-09-01.md`). No skill moves, edits, archives or
+deletes an ignored path, and no skill writes into one.
+
+The value is the backticked items of the `IGNORE` row, separated by commas. To filter a
+list of absolute paths (one per line) down to those outside `IGNORE`:
+
+```bash
+ignore_list=$(sed -n 's/^| `IGNORE` |\(.*\)|[[:space:]]*$/\1/p' "$REPO_ROOT/.claude/para/vault.md" \
+  | grep -oE '`[^`]+`' | tr -d '`')
+not_ignored() { while IFS= read -r p; do r=${p#"$REPO_ROOT"/}; r=${r#./}; skip=
+  while IFS= read -r i; do [ -n "$i" ] && case "$r" in "$i"|"$i"/*) skip=1 ;; esac
+  done <<<"$ignore_list"; [ -z "$skip" ] && printf '%s\n' "$p"; done; }
+```
+
+`IGNORE` hides nothing from the duplicate-name check: Obsidian resolves links across the
+whole of `REPO_ROOT`, ignored or not (`note-format.md` «Name collisions»).
+
 ## Rules
 
 - Quote every path. `REPO_ROOT` and most note titles contain spaces; an unquoted path
