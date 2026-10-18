@@ -159,7 +159,8 @@ daily notes, attachments, the user's own Obsidian templates, and whatever the us
 told `/para:init` to leave as it is. `/para:init` fills it when it adopts an existing
 vault; the user may edit it. A path is ignored when it **is** an entry or lies
 **under** one (`Daily` covers `Daily/2026-09-01.md`). No skill moves, edits, archives or
-deletes an ignored path, and no skill writes into one.
+deletes an ignored path, and no skill writes into one. `/para:vault-lint` leaves ignored
+paths out of **every** check except the duplicate-name check (below).
 
 The value is the backticked items of the `IGNORE` row, separated by commas. To filter a
 list of absolute paths (one per line) down to those outside `IGNORE`:

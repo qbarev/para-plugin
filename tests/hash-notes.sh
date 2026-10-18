@@ -5,9 +5,9 @@
 # are skipped: they hold settings, not notes.
 #
 #   tests/hash-notes.sh <dir> > before; ...; tests/hash-notes.sh <dir> > after
-#   comm -23 before after   # notes changed or gone — must be empty after /para:init
-#   comm -13 before after   # notes that appeared — only what init created
-set -eu
+#   LC_ALL=C comm -23 before after   # notes changed or gone — must be empty after /para:init
+#   LC_ALL=C comm -13 before after   # notes that appeared — only what init created
+set -euo pipefail
 dir=${1:?usage: hash-notes.sh <dir>}
 [ -d "$dir" ] || { echo "not a directory: $dir" >&2; exit 2; }
 export LC_ALL=C

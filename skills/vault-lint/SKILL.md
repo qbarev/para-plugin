@@ -31,11 +31,11 @@ then reports duplicates that do not exist, and `sort -u` silently drops distinct
 targets. Byte comparison is the only correct one here.
 
 **`IGNORE`** (`paths.md` «IGNORE») — the paths PARA leaves alone. Define `ignore_list`
-and `not_ignored` as `paths.md` gives them. Three checks pipe their hits through
-`not_ignored`: `lint.finding.notes_in_repo_root`, `lint.finding.extra_folders` and
-`lint.finding.orphans`. `lint.finding.duplicate_names` deliberately does **not**: links
-resolve across the whole vault, ignored paths included. `--fix` never edits an ignored
-path.
+and `not_ignored` as `paths.md` gives them. **Every check leaves ignored paths out**:
+the `find` lists below pipe through `not_ignored`, and a `grep` hit whose file is
+ignored is dropped (Group 2 runs over a pre-filtered note list). The one exception is
+`lint.finding.duplicate_names`, which deliberately includes them: links resolve across
+the whole vault, ignored paths included. `--fix` never edits an ignored path.
 
 **Exclude `Templates/` from every check.** This includes the `id`, `project:` and
 `REPO_ROOT` commands, which recurse into it unless told otherwise. A template is supposed to contain `{{title}}`
@@ -166,8 +166,18 @@ grep -rhoE '^project: "\[\[[^]]+\]\]"' "$PARA_ROOT" | sed 's/.*\[\[//; s/\]\]"//
 
 ## Group 2 — `lint.group.schema`
 
-Check every note carrying frontmatter. Values come from `note-format.md`; do not
-hardcode a second copy of the allowed list here — read it.
+Check every note carrying frontmatter **outside `IGNORE`** — an adopted vault's daily
+notes keep their own frontmatter, and reporting it would flood the group. Build the list
+once and run each `grep` below over it instead of over `"$PARA_ROOT"`:
+
+```bash
+find "$PARA_ROOT" -name "*.md" -not -path "*/.*" -not -path "*/Templates/*" | not_ignored \
+  | tr '\n' '\0' > "$TMPDIR/para-notes"
+xargs -0 grep -nE '<pattern>' /dev/null < "$TMPDIR/para-notes"   # in place of grep -rnE … "$PARA_ROOT"
+```
+
+Values come from `note-format.md`; do not hardcode a second copy of the allowed list
+here — read it.
 
 - **`area`**, **`type`** and the Area grouping field — any value outside the allowed
   set for that field, or a field carrying more than one value. Read the sets from the

@@ -153,6 +153,8 @@ init.b.duplicates: The same name in more than one place. These notes stay where 
 init.b.duplicates_choice: leave them where they are, or stop here: rename one in Obsidian (it updates the links) and run /para:init again
 init.b.moves: Moves
 init.b.ignore: Stay where they are (IGNORE)
-init.b.links: Links that stop working after the moves (init does not edit notes; fix them in Obsidian):
+init.b.links: Links that may stop working after the moves (init does not edit notes; fix them in Obsidian):
 init.b.checkboxes: Notes with checkboxes, left untouched: {n}
 init.snapshot: Make a zip copy of the vault first, at {path}? (yes / no)
+init.b.links_scope: Only links in .md notes were checked; canvases, bases and bookmarks were not.
+init.b.ignored_folder: {folder} is in IGNORE as a whole: notes you add there later are ignored too.

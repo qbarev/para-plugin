@@ -429,12 +429,23 @@ find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -name '*.md' -print \
 find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -name '*.md' -print0 \
   | xargs -0 grep -nHoE '!?\[\[[^]|#]*/[^]]*\]\]|\]\([^)]+\)' /dev/null \
   | grep -vE '\]\((https?|mailto|obsidian|file):|\]\(#'
+# the plugin's template names against the user's notes: init must not make a duplicate
+for t in "$SKILL_DIR"/../../templates/<LANG>/*.md; do
+  find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -name "$(basename "$t")" -print; done
 ```
+
+Only `.md` notes are scanned for links; canvases, bases and bookmarks are not, and the
+plan says so (`init.b.links_scope`). A template name that is already a user's note
+(the last command; `Task.md` counts only under `TASKS = files`) is asked about before
+the plan, as `note-format.md` «Name collisions» says — `init` never copies a template
+that would make a second note of that name.
 
 **The PARA folders already there.** When `REPO_ROOT` already has a folder named like a
 PARA folder (`Projects`, `Areas`, `Resources`, `Archive`, `Inbox`, `Templates`), `.`
-would pour the user's folder into PARA's: the default `PARA_DIR` is then `PARA`, and
-question 2 says why. If `PARA` exists too, question 2 has no default. With `PARA_DIR`
+would pour the user's folder into PARA's. **`.` is then refused**, saying which folder is
+in the way, and a subfolder is proposed — `PARA`, or, if `PARA` exists too, none: the
+user names one. The user's same-named folder is then an ordinary unit, classified like
+any other. With `PARA_DIR`
 a subfolder, every destination below is under `PARA_ROOT` as usual.
 
 ### B2 — Classify
@@ -443,7 +454,9 @@ a subfolder, every destination below is under `PARA_ROOT` as usual.
 under it. A folder one rule below decides as a whole moves as one. A **mixed** folder —
 its notes do not all fall under one rule — is split once: the notes directly in it that a
 rule decides go their own way, one by one; the rest of it (its other notes and its
-subfolders) is one disputed unit. Each note at the top level is a unit of its own.
+subfolders) is one disputed unit. **A move never carries a note that has a line of its
+own:** a mixed folder's remainder is always moved entry by entry, skipping every note
+decided on its own and every held duplicate (B4) — never as one `mv` of the folder. Each note at the top level is a unit of its own.
 Non-note files at the top level stay and join `IGNORE`.
 
 The rules, first match wins:
@@ -478,7 +491,9 @@ After the setup questions, **one message** with every disputed unit, numbered:
    helps to answer — how long it has been unchanged (the span, never a verdict:
    `thresholds.md`), two or three note names, how many notes carry checkboxes, and
    `init`'s guess when it has one;
-2. the top-level notes, one line each, with the same choices;
+2. the top-level notes, one line each, with the same choices — at most **10** lines; past
+   that, the rest go on one line together, «N other notes at the top level», with the
+   same choices for all of them (the user may still single one out);
 3. the duplicates: the `init.b.duplicates` string, each name with all its paths, and the
    `init.b.duplicates_choice` string.
 
@@ -495,7 +510,8 @@ folder split, they say how; `init` never proposes it note by note. Answers:
 - **duplicates, leave** → every copy stays and its path joins `IGNORE` — or, for a copy
   left behind in a folder that otherwise moved, that folder's path, since the copy is all
   it still holds (otherwise `/para:vault-lint` reports the folder as stray); say that
-  `/para:vault-lint` keeps reporting the name until one is renamed (`paths.md` «IGNORE»).
+  `/para:vault-lint` keeps reporting the name until one is renamed (`paths.md` «IGNORE»),
+  and, for a folder, the `init.b.ignored_folder` string.
   **Duplicates, stop** → stop the whole run: nothing is written, and the next run is a
   first run again. `init` never renames a note itself.
 
@@ -523,13 +539,15 @@ A folder becomes a project only on the user's «yes» for that folder. Then:
 At the plan's item 3, each block headed by its string:
 
 - `init.b.moves` — one line per move, `from → to`, grouped by destination; a folder
-  moved whole is one line; a folder moved around a held duplicate says what stays.
-  A project line names the new folder, its id, its `short` and the overview. Then the
-  totals: moves, notes moved.
+  moved whole is one line; a folder moved entry by entry says what stays behind or
+  moves on its own line. A project line names the new folder, its id, its `short` and
+  the overview. Then the totals: moves, and notes moved — **computed, not tallied**: the
+  sum of the survey's note counts for the units that move (a folder's count minus the
+  notes that stay behind or move on their own line, each counted once).
 - `init.b.ignore` — every path that joins `IGNORE`, each with why.
 - `init.b.duplicates` — the names, their paths, the answer.
-- `init.b.links` — every link the moves break: the note, the line, the link. A link
-  breaks when its target moves, or when it is a relative markdown link and its note
+- `init.b.links` — every link the moves may break: the note, the line, the link, then
+  the `init.b.links_scope` string. A link may stop working when its target moves, or when it is a relative markdown link and its note
   moves while its target does not (a link inside a folder that moves whole keeps
   working). Resolve a wikilink's path from `REPO_ROOT`, a markdown link's (`%20` is a
   space) from its note's folder, then from `REPO_ROOT`. «None» when there are none.
@@ -545,9 +563,11 @@ elif [ ! -e "$src" ]; then echo "gone, not moved: $src"
 else mkdir -p "$(dirname "$dest")" && mv "$src" "$dest"; fi
 ```
 
-A folder holding a held duplicate is moved entry by entry: `mkdir -p "$dest"`, then the
-same check and `mv` for each entry of `find "$src" -mindepth 1 -maxdepth 1`, skipping the
-duplicate (and descending into the subfolder that holds it, if it is deeper).
+The notes decided on their own move first. A folder that holds a held duplicate or a
+note with a line of its own — a mixed folder's remainder always — is moved entry by
+entry: `mkdir -p "$dest"`, then the same check and `mv` for each entry of
+`find "$src" -mindepth 1 -maxdepth 1`, skipping those notes (and descending into the
+subfolder that holds one, if it is deeper).
 
 Then check that nothing was lost: every note the survey found is at its old path or at
 its planned new one, and the number of notes outside the dot-entries is the survey's
@@ -557,15 +577,18 @@ count plus the files `init` created:
 find "$REPO_ROOT" -mindepth 1 -name '.*' -prune -o -type f -name '*.md' -print | wc -l
 ```
 
-A mismatch is reported first in the report, with the paths. The `IGNORE` entries go
+Count the notes now at the planned destinations; it must equal the plan's «notes moved»
+total. A mismatch either way is reported first in the report, with the paths. The `IGNORE` entries go
 into `vault.md` at Step 5.7: paths relative to `REPO_ROOT`, as `paths.md` «IGNORE»
 spells the value.
 
 ### The report's B part
 
-- what moved: the count per destination, the projects with their ids;
-- what stays (`IGNORE`), and the duplicates left in place;
-- the `init.b.links` list again — these links are broken now;
+- what moved: the count per destination, the projects with their ids, and the total
+  checked against the plan's;
+- what stays (`IGNORE`), and the duplicates left in place; for a folder in `IGNORE` that
+  only holds a left-behind duplicate, the `init.b.ignored_folder` string;
+- the `init.b.links` list again — these links may be broken now;
 - the `init.b.checkboxes` string with the count, and the folders those notes sit in;
 - the snapshot's path, if one was made.
 
