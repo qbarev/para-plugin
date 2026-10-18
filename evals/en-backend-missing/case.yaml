@@ -1,0 +1,35 @@
+schema_version: "1"
+name: en-backend-missing
+description: LANG = en, TASKS is todoist but the eval child has no Todoist tools; /para:inbox list must say so (in English) and stop, writing nothing.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:inbox list"
+  max_turns: 20
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: stop-message-names-backend
+    pattern: '[Tt]odoist'
+  - type: regex
+    name: no-inbox-listing
+    # the success header of a real listing: "N in the Inbox"
+    pattern: '\d+\s+in the Inbox'
+    match: not_contains
+  - type: regex
+    name: no-russian-in-output
+    pattern: '[А-Яа-я]'
+    match: not_contains
+  - type: file_exists
+    name: no-inbox-folder-written
+    path: "My Drive/legacy-en vault/Second-brain/Inbox"
+    exists: false
+  - type: file_exists
+    name: no-inbox-in-cwd
+    path: "Inbox"
+    exists: false
+  - type: file_exists
+    name: no-notes-in-cwd
+    path: "Second-brain"
+    exists: false

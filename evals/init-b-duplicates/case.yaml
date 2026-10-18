@@ -1,0 +1,40 @@
+schema_version: "1"
+name: init-b-duplicates
+tags: [init-b]
+description: Review focus 3. The adopted vault has «Идеи.md» in two folders, one of which init would move without asking. Every setup and sorting answer is given in advance except what to do about the duplicate, so init must ask about it, naming both paths, before any plan is applied — and both files stay where they are.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:init Answers in advance: language en; PARA_DIR: the default; tasks: files; Areas are not grouped (GROUPING none). Sorting: the folder «Переезд в новую квартиру» is a project; the folders «Работа» and «Здоровье» are areas; the root notes «Покупки.md» and «Мысли о продуктивности.md»: leave as is. Snapshot: no. The plan is approved in advance: show it, then apply it without waiting."
+  max_turns: 80
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: names-first-copy
+    pattern: 'Справочник/Идеи\.md'
+  - type: regex
+    name: names-second-copy
+    pattern: 'Переезд в новую квартиру/Идеи\.md'
+  - type: regex
+    name: not-unsupported
+    pattern: 'not (yet )?supported'
+    match: not_contains
+  - type: regex
+    name: first-copy-in-place
+    target: { source: file, path: "Справочник/Идеи.md" }
+    pattern: 'шпаргалка по tmux'
+  - type: regex
+    name: second-copy-in-place
+    target: { source: file, path: "Переезд в новую квартиру/Идеи.md" }
+    pattern: 'полки над столом'
+  - type: tool_used
+    name: nothing-moved-before-the-answer
+    tool: Bash
+    input_match: '(^|[;&|\s(])mv\s'
+    min: 0
+    max: 0
+  - type: llm
+    name: asks-about-the-duplicate
+    criteria: "The reply asks the user what to do about the note name «Идеи.md» that exists in two places, naming both paths, and says these notes are kept out of the moves until the user decides. It does not decide on its own to move or rename either copy."

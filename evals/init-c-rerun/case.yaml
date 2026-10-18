@@ -1,0 +1,41 @@
+schema_version: "1"
+name: init-c-rerun
+tags: [init-c]
+description: /para:init again on a vault scenario C already migrated (the init-c-done fixture is the real result of a two-turn scenario-C run on the embedded fixture). Nothing is missing, so nothing is written, moved or trashed. The tree-wide hash comparison is run by hand (Task 10 report).
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:init The plan is approved in advance: show it, then apply it without waiting. Snapshot: no."
+  max_turns: 60
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: says-nothing-to-do
+    pattern: 'Всё на месте|Everything is in place'
+    flags: i
+  - type: tool_used
+    name: no-write
+    tool: Write
+    min: 0
+    max: 0
+  - type: tool_used
+    name: no-edit
+    tool: Edit
+    min: 0
+    max: 0
+  - type: tool_used
+    name: nothing-trashed-or-moved
+    tool: Bash
+    input_match: '"command":\s*"(?:[^"\\]|\\.)*?(?:^|[;&|\s(]|\\n)(mv|trash|rmdir)\s'
+    min: 0
+    max: 0
+  - type: file_exists
+    name: no-file-created
+    path: "**"
+    exists: false
+  - type: regex
+    name: config-kept
+    target: { source: file, path: ".claude/para/vault.md" }
+    pattern: '^(?=[\s\S]*\| `PARA_DIR` \| `Second-brain` \|)(?=[\s\S]*\| `TASKS` \| `todoist` \|)'

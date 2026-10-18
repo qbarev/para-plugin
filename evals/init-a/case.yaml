@@ -1,0 +1,70 @@
+schema_version: "1"
+name: init-a
+tags: [init-core]
+description: /para:init in an empty folder (scenario A) with every answer given in advance (en, default PARA_DIR, files, Areas not grouped). The eval child may not write into .claude/ (Write there is ask-gated, and the sandbox refuses settings.json), so the config files are graded by the write the run attempted; the files elsewhere are graded on disk. /para:vault-lint on the result is the init-a-lint case.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:init Answers in advance: language en; PARA_DIR: the default; tasks: files; Areas are not grouped (GROUPING none). The plan is approved in advance: show it, then apply it without waiting."
+  max_turns: 60
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: file_exists
+    name: no-adapter-config
+    path: ".claude/para/adapter.md"
+    exists: false
+  - type: regex
+    name: vault-values
+    target: trace
+    pattern: '"name":"(Bash|Write)","input":\{[^\n]*?\.claude/para/vault\.md[^\n]*?\| `REPO_ROOT` \| `[^`]+` \|[^\n]*?\| `PARA_DIR` \| `PARA` \|[^\n]*?\| `LANG` \| `en` \|[^\n]*?\| `TASKS` \| `files` \|[^\n]*?\| `SCHEMA` \| `1` \|'
+  - type: regex
+    name: areas-not-grouped
+    target: trace
+    pattern: '"name":"(Bash|Write)","input":\{[^\n]*?\.claude/para/areas\.md[^\n]*?\| `GROUPING` \| `none` \|'
+  - type: tool_used
+    name: para-folders-made
+    # empty folders are invisible to file_exists; read the mkdir from the Bash input
+    tool: Bash
+    input_match: '^(?=[\s\S]*mkdir)(?=[\s\S]*Projects)(?=[\s\S]*Areas)(?=[\s\S]*Resources)(?=[\s\S]*Archive)(?=[\s\S]*Inbox)'
+  - type: file_exists
+    name: template-project
+    path: "PARA/Templates/Project.md"
+  - type: file_exists
+    name: template-task-in-files-mode
+    path: "PARA/Templates/Task.md"
+  - type: regex
+    name: project-template-english
+    target: { source: file, path: "PARA/Templates/Project.md" }
+    pattern: '^# Goal$[\s\S]*^# Definition of Done$'
+    flags: m
+  - type: regex
+    name: project-template-no-area-no-tasks-ref
+    target: { source: file, path: "PARA/Templates/Project.md" }
+    pattern: '^(area|tasks_ref):'
+    flags: m
+    match: not_contains
+  - type: regex
+    name: area-template-no-grouping-field
+    target: { source: file, path: "PARA/Templates/Area.md" }
+    pattern: '^sphere:'
+    flags: m
+    match: not_contains
+  - type: regex
+    name: claude-md-block
+    target: { source: file, path: "CLAUDE.md" }
+    pattern: '<!-- para:begin -->[\s\S]+<!-- para:end -->'
+  - type: regex
+    name: obsidian-app
+    target: { source: file, path: ".obsidian/app.json" }
+    pattern: '^(?=[\s\S]*"newFileFolderPath":\s*"PARA/Inbox")(?=[\s\S]*"alwaysUpdateLinks":\s*true)'
+  - type: regex
+    name: obsidian-templates
+    target: { source: file, path: ".obsidian/templates.json" }
+    pattern: '"folder":\s*"PARA/Templates"'
+  - type: regex
+    name: settings-read-only-permissions
+    # the eval sandbox refuses writes to .claude/settings.json, so the attempt is graded:
+    # a Bash or Write call that targets the file and carries the read-only entries
+    target: trace
+    pattern: '"name":"(Bash|Write)","input":\{[^\n]*?settings\.json[^\n]*?Bash\(grep:\*\)[^\n]*?Bash\(date:\*\)'

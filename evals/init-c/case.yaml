@@ -1,0 +1,69 @@
+schema_version: "1"
+name: init-c
+tags: [init-c]
+description: /para:init on a vault that still carries the old embedded tooling (scenario C, the synthetic embedded fixture). C always has Tier 2 lines (the old tooling to the Trash, CLAUDE.md replaced, the vault's Project template edited), so even with the plan approved in advance init shows the plan and waits for a «yes» - one eval turn grades the plan and that nothing was written. Applying it is checked by hand in a two-turn run (Task 10 report), and the result is the init-c-done fixture that init-c-rerun starts from.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:init The plan is approved in advance: show it, then apply it without waiting. Snapshot: no."
+  max_turns: 60
+  timeout_seconds: 1500
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: names-scenario-c
+    pattern: '(сценари[йяю]|scenario)\s*[CС]([^A-Za-zА-Яа-я]|$)'
+    flags: i
+  - type: regex
+    name: not-unsupported
+    pattern: 'not supported|не поддерживается|(can.t|cannot) [a-z ]{0,30}yet|пока не (умеет|поддерж)'
+    flags: i
+    match: not_contains
+  - type: regex
+    name: plan-vault-values
+    pattern: '^(?=[\s\S]*Second-brain)(?=[\s\S]*`?ru`?)(?=[\s\S]*`?todoist`?)(?=[\s\S]*SCHEMA)'
+  - type: regex
+    name: plan-area-key-renamed
+    pattern: 'AREA_TASK_PROJECTS'
+  - type: regex
+    name: plan-renames-every-overview
+    pattern: '^(?=[\s\S]*tasks_ref)(?=[\s\S]*PROJ-0001)(?=[\s\S]*PROJ-0002)(?=[\s\S]*PROJ-0003)(?=[\s\S]*PROJ-0004)'
+  - type: regex
+    name: plan-project-template
+    pattern: 'Templates/Project\.md'
+  - type: regex
+    name: plan-planning-file
+    pattern: '\.claude/local/planning\.md'
+  - type: regex
+    name: plan-trash-old-tooling
+    pattern: '^(?=[\s\S]*(Trash|корзин))(?=[\s\S]*local\.example)(?=[\s\S]*vault-lint)'
+    flags: i
+  - type: regex
+    name: plan-keeps-foreign-skill
+    pattern: 'journal'
+  - type: regex
+    name: waits-for-yes
+    pattern: 'Применить план|Apply this plan'
+  - type: tool_used
+    name: no-write
+    tool: Write
+    min: 0
+    max: 0
+  - type: tool_used
+    name: no-edit
+    tool: Edit
+    min: 0
+    max: 0
+  - type: tool_used
+    name: nothing-trashed-or-moved
+    tool: Bash
+    input_match: '"command":\s*"(?:[^"\\]|\\.)*?(?:^|[;&|\s(]|\\n)(mv|trash|rmdir)\s'
+    min: 0
+    max: 0
+  - type: tool_used
+    name: no-in-place-edit
+    tool: Bash
+    input_match: 'sed\s+-i|perl\s+-[a-z]*i'
+    min: 0
+    max: 0

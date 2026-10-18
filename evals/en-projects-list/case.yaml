@@ -1,0 +1,28 @@
+schema_version: "1"
+name: en-projects-list
+description: /para:projects list on the legacy-en fixture (LANG = en), with a Russian sentence after the command; the output follows LANG, not the prompt's language.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:projects list\n\nПокажи кратко, пожалуйста."
+  max_turns: 25
+  allowed_tools: [Read, Glob, Grep, Bash]
+runs: 1
+graders:
+  - type: regex
+    name: order-by-deadline
+    pattern: 'Kitchen renovation[\s\S]*Mountain trip[\s\S]*Studio website'
+  - type: regex
+    name: unpaired-marked-in-english
+    pattern: 'Mountain trip[^\n]*no pair in the task manager'
+  - type: regex
+    name: legacy-marked-in-english
+    pattern: 'Studio website[^\n]*old format'
+  - type: regex
+    name: archived-not-listed
+    pattern: 'Old project'
+    match: not_contains
+  - type: regex
+    name: no-russian-in-output
+    pattern: '[А-Яа-я]'
+    match: not_contains

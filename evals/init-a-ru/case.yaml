@@ -1,0 +1,38 @@
+schema_version: "1"
+name: init-a-ru
+description: /para:init in an empty folder with ru and PARA_DIR Second-brain; Russian templates and headings, and the plan is shown before it is applied.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:init Ответы заранее: язык ru; PARA_DIR: Second-brain; задачи: files; области не группируются (GROUPING none). План одобрен заранее: покажи его и сразу применяй."
+  max_turns: 60
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: vault-values
+    # graded from the attempted write: the eval child may not write into .claude/
+    target: trace
+    pattern: '"name":"(Bash|Write)","input":\{[^\n]*?\.claude/para/vault\.md[^\n]*?\| `PARA_DIR` \| `Second-brain` \|[^\n]*?\| `LANG` \| `ru` \|[^\n]*?\| `TASKS` \| `files` \|'
+  - type: regex
+    name: project-template-russian
+    target: { source: file, path: "Second-brain/Templates/Project.md" }
+    pattern: '^# Цель$[\s\S]*^# Критерий готовности$'
+    flags: m
+  - type: regex
+    name: resource-template-russian
+    target: { source: file, path: "Second-brain/Templates/Resource.md" }
+    pattern: '^# Конспект$'
+    flags: m
+  - type: regex
+    name: obsidian-app
+    target: { source: file, path: ".obsidian/app.json" }
+    pattern: '"newFileFolderPath":\s*"Second-brain/Inbox"'
+  - type: regex
+    name: plan-shown-in-russian
+    target: trace
+    pattern: 'План'
+  - type: file_exists
+    name: nothing-under-default-para-dir
+    path: "PARA/**"
+    exists: false

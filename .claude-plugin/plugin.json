@@ -1,0 +1,6 @@
+{
+  "name": "para",
+  "version": "0.1.0",
+  "description": "Skills for running an Obsidian PARA vault: inbox, projects, areas, resources, archive, lint.",
+  "author": { "name": "qbarev" }
+}

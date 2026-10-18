@@ -1,0 +1,41 @@
+schema_version: "1"
+name: init-b-rerun
+tags: [init-b]
+description: /para:init again on a vault that scenario B already adopted (the init-b-done fixture is a real scenario-B result), same answers in advance. Nothing is written and nothing is moved; a re-run never sorts notes again. The tree-wide hash comparison is run by hand (see the Task 9 report).
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:init Answers in advance: language en; PARA_DIR: the default; tasks: files; Areas are not grouped (GROUPING none). Sorting: the folder «Переезд в новую квартиру» is a project; the folders «Работа» and «Здоровье» are areas; the root notes «Покупки.md» and «Мысли о продуктивности.md»: leave as is; the two «Идеи.md»: leave both where they are. Snapshot: no. The plan is approved in advance: show it, then apply it without waiting."
+  max_turns: 60
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: regex
+    name: says-nothing-to-do
+    pattern: 'Everything is in place'
+    flags: i
+  - type: tool_used
+    name: no-write
+    tool: Write
+    min: 0
+    max: 0
+  - type: tool_used
+    name: no-edit
+    tool: Edit
+    min: 0
+    max: 0
+  - type: tool_used
+    name: nothing-moved
+    tool: Bash
+    input_match: '(^|[;&|\s(])mv\s'
+    min: 0
+    max: 0
+  - type: file_exists
+    name: no-file-created
+    path: "**"
+    exists: false
+  - type: regex
+    name: ignore-kept
+    target: { source: file, path: ".claude/para/vault.md" }
+    pattern: '\| `IGNORE` \|[^\n]*`Daily`'

@@ -1,0 +1,60 @@
+schema_version: "1"
+name: init-b
+tags: [init-b]
+description: /para:init on an existing Obsidian vault of ~50 notes with an arbitrary structure (scenario B), every answer given in advance. The obvious is sorted without asking (the reference folder to Resources, the old finished folder to Archive, Daily/attachments/the user's templates stay and go to IGNORE), the answered folders become a project and areas, both Идеи.md stay put, no note's content changes. The before/after hash-notes.sh comparison is run by hand (see the Task 9 report); these graders are its in-eval proxy. Config writes are graded by the attempt (the eval child may not write into .claude/).
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/para:init Answers in advance: language en; PARA_DIR: the default; tasks: files; Areas are not grouped (GROUPING none). Sorting: the folder «Переезд в новую квартиру» is a project; the folders «Работа» and «Здоровье» are areas; the root notes «Покупки.md» and «Мысли о продуктивности.md»: leave as is; the two «Идеи.md»: leave both where they are. Snapshot: no. The plan is approved in advance: show it, then apply it without waiting."
+  max_turns: 150
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+runs: 1
+graders:
+  - type: file_exists
+    name: reference-folder-to-resources
+    path: "Resources/Справочник/Git команды.md"
+  - type: file_exists
+    name: old-folder-to-archive
+    path: "Archive/Курсовая 2023/Защита.md"
+  - type: file_exists
+    name: project-overview
+    path: "Projects/PROJ-0001 Переезд в новую квартиру/PROJ-0001 Переезд в новую квартиру.md"
+  - type: file_exists
+    name: project-notes-moved
+    path: "Projects/PROJ-0001 Переезд в новую квартиру/Notes/Чек-лист переезда.md"
+  - type: file_exists
+    name: area-moved
+    path: "Areas/Здоровье/Сон.md"
+  - type: regex
+    name: duplicate-1-stays
+    target: { source: file, path: "Справочник/Идеи.md" }
+    pattern: 'шпаргалка по tmux'
+  - type: regex
+    name: duplicate-2-stays
+    target: { source: file, path: "Переезд в новую квартиру/Идеи.md" }
+    pattern: 'полки над столом'
+  - type: regex
+    name: checkbox-note-untouched
+    target: { source: file, path: "Projects/PROJ-0001 Переезд в новую квартиру/Notes/Чек-лист переезда.md" }
+    pattern: '^# Чек-лист переезда\n\nЦель: переехать до конца ноября\.\n\n- \[x\] Выбрать квартиру\n- \[x\] Подписать договор\n- \[ \] Заказать грузчиков\n- \[ \] Упаковать книги\n- \[ \] Перевезти вещи\n\nПлан квартиры: !\[\[схема квартиры\.png\]\]\n$'
+  - type: regex
+    name: ignore-daily-attachments
+    target: trace
+    pattern: '"name":"(Bash|Write)","input":\{[^\n]*?\.claude/para/vault\.md[^\n]*?\| `IGNORE` \|(?=[^|\n]*`Daily`)(?=[^|\n]*`attachments`)'
+  - type: regex
+    name: vault-values
+    target: trace
+    pattern: '"name":"(Bash|Write)","input":\{[^\n]*?\.claude/para/vault\.md[^\n]*?\| `PARA_DIR` \| `\.` \|[^\n]*?\| `TASKS` \| `files` \|'
+  - type: regex
+    name: reports-checkbox-notes
+    pattern: 'Notes with checkboxes[^\n]*\b10\b'
+  - type: regex
+    name: no-note-edited
+    target: trace
+    pattern: '"name":"Edit","input":\{"file_path":"[^"]*\.md"'
+    match: not_contains
+  - type: llm
+    name: moves-from-plan
+    focus: trace
+    criteria: "Before any file was moved, the assistant showed one plan listing every move (from → to). Every mv command the assistant ran afterwards moves a file or folder that the plan listed, to the destination the plan gave; nothing was moved that the plan did not list. No existing note was edited, rewritten or renamed (writing new files such as templates, a project overview or config is fine). The plan names the links that the moves break: [[Справочник/Git команды]] and the markdown link to Справочник/SQL%20шпаргалка.md."
