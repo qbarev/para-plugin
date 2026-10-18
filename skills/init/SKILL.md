@@ -26,6 +26,9 @@ defines them.
 | Obsidian settings | `REPO_ROOT/.obsidian/app.json`, `templates.json` | merged («Obsidian») |
 | the user's notes and folders (B only) | from where they are into the PARA folders | **moved, never edited** — only the moves the approved plan lists («Scenario B») |
 | project overviews (B only) | `PARA_ROOT/Projects/PROJ-xxxx <title>/` | new, for a folder the user called a project («Scenario B») |
+| the pair key in overviews (C only) | `PARA_ROOT/Projects/`, `PARA_ROOT/Archive/` | the one frontmatter key renamed, nothing else (`scenario-c.md`) |
+| the vault's planning file (C only) | `REPO_ROOT/.claude/local/planning.md` | new, lifted from the old tooling (`scenario-c.md`) |
+| the old embedded tooling (C only) | `REPO_ROOT/.claude/`, `CLAUDE.md`, the old template's docs | to the macOS Trash, Tier 2 (`scenario-c.md`) |
 
 ## Base layer
 
@@ -46,6 +49,8 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
   (issuing an id), `../../para/thresholds.md` (the area-staleness threshold and «The limit
   of mtime»), `paths.md` «IGNORE»
 - `../../lang/<LANG>.md` once `LANG` is known: the `init.*` strings
+- scenario C only, and C's leftovers on a re-run: `scenario-c.md` in this skill's base
+  directory — everything about the old layout; also `../../para/move.md` (the Trash)
 
 `SKILL_DIR` below is this skill's base directory, as the harness announces it.
 
@@ -359,7 +364,8 @@ again: their answers are in it.
 3. **Check every piece** of «Step 5» against the disk with the stored values: missing
    folders, missing templates (`Task.md` only under `files`), `areas.md` (missing → ask
    question 4 only), `adapter.md` under `mcp` (missing → the `mcp-generic.md` procedure),
-   the Obsidian keys, the permissions, the `CLAUDE.md` block. Only what is missing or
+   the Obsidian keys, the permissions, the `CLAUDE.md` block, and what scenario C may
+   have left (`scenario-c.md` «Leftovers on a re-run»). Only what is missing or
    different joins the plan.
 4. **Probe** the backend (read-only, as in Step 2) and say the result; a failure is
    reported and changes nothing in the config.
@@ -594,7 +600,9 @@ spells the value.
 
 ## Scenario C — a vault with the old embedded tooling
 
-**Not supported by this version yet.** Name the scenario, say that it is not supported
-yet and that nothing was changed, and stop. (Planned: moving the old config into
-`.claude/para/`, renaming the pair field to `tasks_ref`, the snapshot, retiring the
-embedded skills.)
+The vault was built from the old PARA vault template and still carries its tooling in
+`.claude/`. C moves its config into this plugin's, renames the pair key in the project
+overviews to `tasks_ref`, lifts planning into a file of the vault's own, and retires the
+old tooling to the Trash. **Read `scenario-c.md` in this skill's base directory and
+follow it**: it holds C's steps (C1–C5) in place of Steps 2–6, and it is the only place
+that describes the old layout. Steps 2–6 above apply where it points to them.

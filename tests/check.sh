@@ -7,6 +7,9 @@ cd "$(dirname "$0")/.." || exit 2
 fail=0
 report() { echo "$1"; fail=1; }
 
+# Checks 1, 5 and 6 scan skills/*/SKILL.md and para/*.md only. skills/init/scenario-c.md
+# is outside them by design: it is the one file that describes the old embedded layout
+# (its paths, its planning sections, its todoist.md), read by /para:init in scenario C only.
 # Check 1: no reference to the old location of the base layer or its local/ config.
 # Config lives at <REPO_ROOT>/.claude/para/{vault,areas,adapter}.md and may be named.
 # Match each reference on its own (grep -o), so an allowed reference on the same line
@@ -21,7 +24,9 @@ done < <(grep -nE '\.claude/para/' skills/*/SKILL.md para/*.md | grep -vE '^skil
            | grep -vE '\.claude/para/$' )
 while IFS= read -r hit; do
   report "old-location (local/): $hit"
+# (`.claude/local/` is the vault's own folder for local files such as planning.md, not the old one.)
 done < <(grep -nE 'local\.example|local/|roots\.md|TODOIST_AREA_PROJECTS' skills/*/SKILL.md para/*.md \
+           | sed 's#\.claude/local/##g' | grep -E 'local\.example|local/|roots\.md|TODOIST_AREA_PROJECTS' \
            | grep -vE '^skills/init/SKILL\.md:[0-9]+:.*old-layout')
 
 # Check 2: every ../../para/X.md reference in a skill resolves to an existing file.
