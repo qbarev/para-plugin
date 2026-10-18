@@ -50,6 +50,7 @@ keeps area tasks in folders reads it as a group name from `GROUPS`, and says so)
 | `task.add` | `project_ref` or `area`; `text`; `description`, `duration`, `due`, `labels` (all optional) | the new task's `id` |
 | `task.list` | `project_ref` or `area`; `state`: `open` (default) or `completed`; for `completed`, `since` and `until` as `YYYY-MM-DD` | the tasks, each with its `due` date |
 | `task.move` | task `id`; destination `project_ref` or `area`; `title` (optional — the task's new text, a rename on move) | nothing; the task keeps its date, recurrence and `id`, and stays open |
+| `task.complete` | task `id` | nothing; the task is completed, never deleted. **Optional** — a ledgered addition like `project.list`; «not supported» is a normal answer |
 | `project.activity` | `ref` | `state`: `active`, `archived` or `missing` — **always returned**; `last_event`: the time of the latest event (a task added, completed, changed) — **may be absent** («no events found», or not supported) |
 | `task.label` | task `id`; `label` | nothing; **optional**. Used only when the adapter marks `labels` on `task.add` unsupported; otherwise pass `labels` to `task.add` |
 

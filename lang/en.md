@@ -80,6 +80,7 @@ archive.list.notes: **Archived notes ({n})**
 archive.list.deadline: deadline {date}
 archive.ask_changed: what did this project change?
 archive.expected: Expected: {value}. Did it come true?
+archive.close_in_app: close them in the task app yourself
 
 ## Projects
 

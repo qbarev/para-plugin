@@ -79,7 +79,7 @@ done < <(grep -nE 'todoist|Todoist|mcp__' skills/*/SKILL.md para/*.md \
            | grep -vE 'todoist.*tasks_ref|tasks_ref.*todoist')
 
 # Check 6b: the contract names the contract's operations and every adapter covers each one.
-ops="inbox.add inbox.list inbox.close project.create project.archive project.restore project.delete task.add task.list task.move project.activity task.label project.list"
+ops="inbox.add inbox.list inbox.close project.create project.archive project.restore project.delete task.add task.list task.move task.complete project.activity task.label project.list"
 for op in $ops; do
   if [ -f para/tasks.md ]; then
     grep -qF "\`$op\`" para/tasks.md || report "missing-operation: para/tasks.md lacks $op"

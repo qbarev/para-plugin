@@ -80,6 +80,7 @@ archive.list.notes: **Заметки в архиве ({n})**
 archive.list.deadline: дедлайн {date}
 archive.ask_changed: что этот проект изменил?
 archive.expected: Ожидалось: {value}. Сбылось?
+archive.close_in_app: закройте их в приложении задач сами
 
 ## Projects
 

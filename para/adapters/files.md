@@ -115,6 +115,11 @@ other field are kept. The task stays open; a capture moved out of `Inbox/` becom
 task of its destination. A basename already taken is a collision (see «Where things
 live»).
 
+### `task.complete`
+
+Set `status: done` in the task note's frontmatter — that field only; the file stays
+where it is and the body and every other field are kept. Never delete the file.
+
 ### `project.activity`
 
 `state`, always: `active` when the `ref` folder exists, `missing` when it does not.

@@ -39,6 +39,8 @@ Specifics that hold for every operation:
 
 ### `task.move`
 
+### `task.complete`
+
 ### `project.activity`
 
 ### `task.label`

@@ -1,6 +1,6 @@
 ---
 name: archive
-description: Work with Archive in the Obsidian PARA vault — put a finished or abandoned project (folder and its Todoist project) or a note into the archive, list what is already there, or restore something back into an active folder. Use when the user says "archive this", "move to archive", "close the project", "what is in the archive", "show the archive", "restore from the archive", "заархивируй", "перенеси в архив", "закрой проект", "что в архиве", "покажи архив", "верни из архива", "восстанови проект".
+description: Work with Archive in the Obsidian PARA vault — put a finished or abandoned project (folder and its project in the task app, such as Todoist) or a note into the archive, list what is already there, or restore something back into an active folder. Use when the user says "archive this", "move to archive", "close the project", "what is in the archive", "show the archive", "restore from the archive", "заархивируй", "перенеси в архив", "закрой проект", "что в архиве", "покажи архив", "верни из архива", "восстанови проект".
 argument-hint: <target> | list | restore <target>
 ---
 
@@ -37,8 +37,10 @@ that project. Empty `$ARGUMENTS` → show the three subcommands and ask.
 2. **If the target is a project:**
    - **Open tasks first.** Read the paired project's tasks (`task.list`, open,
      with `project_ref`). If tasks are open, list them and ask once (Tier 1.5)
-     what happens to them: complete them, move them to an area project (`task.move` with `area`)
-     or leave them inside the archived project. Carry the
+     what happens to them: complete them (`task.complete` on each), move them to an
+     area project (`task.move` with `area`) or leave them inside the archived project.
+     Where the adapter marks `task.complete` «not supported», the first choice is the
+     `archive.close_in_app` string instead, and nothing is called for it. Carry the
      answer out before going on. Under `pairing: separate`, an unpaired project with a legacy `Tasks/` folder has
      no backend side; `dod.md` says how its tasks are checked. Under `pairing: none` the
      tasks are the project's own `Tasks/` notes and move with the folder.

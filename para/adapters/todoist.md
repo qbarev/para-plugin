@@ -7,7 +7,7 @@ that names Todoist's tools.
 pairing: separate
 
 If the Todoist tools are not available in the session, `tasks.md` «Backend missing»
-applies: say so and stop.
+applies.
 
 Todoist specifics that hold for every operation:
 
@@ -83,6 +83,12 @@ when `due` was given — the user's own words for the day, passed through. Suppo
 `update-tasks` with the task `id` and the destination `projectId`, plus `content` = `title` when a new title is given — and nothing else.
 Todoist keeps the date and recurrence on a project move. Never send the task's current
 `projectId`.
+
+### `task.complete`
+
+`complete-tasks` with the task `id`. Confirm by re-reading: `find-tasks` with the task's
+`projectId` (paged) must no longer return the id; the tool's echo is not evidence.
+Never `delete-object`.
 
 ### `project.activity`
 

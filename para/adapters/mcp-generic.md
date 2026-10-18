@@ -33,13 +33,16 @@ single rule for what a skill does at an operation the adapter marks «not suppor
    - an app with no inbox concept marks `inbox.add`, `inbox.list` and `inbox.close`
      «not supported»;
    - **confirm a change by re-reading the object, never trust the tool's echo.** For
-     `project.archive`, `project.restore`, `task.label` and `task.move`, the proposal
+     `project.archive`, `project.restore`, `task.label`, `task.move` and
+     `task.complete`, the proposal
      names the read call that confirms the change (for example reading the project
      list or the task back), and the generated section carries that read step;
    - `project.activity` must return `state` always (from the project list: absent is
      `missing`) and may leave `last_event` absent;
-   - `project.list` and `task.label` are optional, and «not supported» is a normal
-     answer for them.
+   - `task.complete` must complete the task without destroying it, as `inbox.close`
+     must; a tool that can only delete leaves it «not supported»;
+   - `project.list`, `task.complete` and `task.label` are optional, and «not supported»
+     is a normal answer for them.
 3. **Mark what does not match** «not supported», with a one-line reason. Never
    substitute a tool whose effect differs. Never claim support for an operation that
    was not found.
@@ -56,7 +59,8 @@ single rule for what a skill does at an operation the adapter marks «not suppor
    cursor is not the end). Correct the proposal where the real result differs. **Never
    call a mutating tool during the procedure.** Every mutating operation
    (`inbox.add`, `inbox.close`, `project.create`, `project.archive`,
-   `project.restore`, `project.delete`, `task.add`, `task.move`, `task.label`) is marked
+   `project.restore`, `project.delete`, `task.add`, `task.move`, `task.complete`,
+   `task.label`) is marked
    «behaviour unverified» in the table, and in its section of the generated file.
 7. **Show the table**: one row per operation, with the tool, its arguments and the
    result mapping, and the `pairing` line. Ask for a «yes» (`confirm.md`). Nothing is
@@ -96,7 +100,7 @@ If the tools are not available in the session, `tasks.md` «Backend missing» ap
   the reason.
 - `pairing:` is a line of its own, `separate` or `none`, exactly once.
 - An operation that changes something (`project.archive`, `project.restore`,
-  `task.label`, `task.move`) carries its confirming read in its section: «confirm by
+  `task.label`, `task.move`, `task.complete`) carries its confirming read in its section: «confirm by
   re-reading <object> with <tool>; the tool's echo is not evidence».
 - A mutating operation not exercised during `init` carries «behaviour unverified».
 - Tool names appear only in this generated file, as in `todoist.md`.
