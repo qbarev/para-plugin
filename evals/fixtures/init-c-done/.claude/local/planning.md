@@ -39,6 +39,7 @@ hours as any other.
 |---|---|---|
 | duration | the estimate | at planning, at the latest when the task gets a date |
 | date | the day it is planned for; dated = in the sprint | at sprint or week planning, never on creation |
+| time | when in the day | in the morning of that day |
 
 **Type.** A task is *tactical* (заполнить, отправить, позвонить) or *strategic*
 (решить, сформулировать, выбрать). The type is judged from the wording when choosing a

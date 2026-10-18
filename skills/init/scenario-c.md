@@ -89,7 +89,8 @@ with «Backend missing» (`tasks.md`) until the app is connected.
 `SKILL.md` Step 3, in its order, with these lines:
 
 1. `REPO_ROOT`, `PARA_ROOT`; the old `REPO_ROOT` if it differs.
-2. Folders missing (normally none).
+2. Folders missing (normally none), and the id journal if it is missing (`SKILL.md`
+   Step 5.1; an existing one is kept as it is).
 3. Templates missing (`Task.md` is not copied under `todoist`), then:
    - **a.** one line per overview: `<path>: todoist: "<id>" → tasks_ref: "<id>"` — the key
      only, the value unchanged, `Projects/` and `Archive/` alike. Tier 1 (`confirm.md`:
@@ -147,7 +148,12 @@ is a vault with neither the old config nor the new one.
 7. The Trash (3d), except `CLAUDE.md` and `local/`: `trash "<path>"` for each, quoted.
    Then `rmdir` `.claude/skills` if it is empty — never `rm -r`. `trash` missing or
    failing is reported, never replaced by `rm` (`move.md`).
-8. `CLAUDE.md`: the old one to the Trash, the new one written («CLAUDE.md»).
+8. `CLAUDE.md` («CLAUDE.md»): the new one is written **before** the old one goes — first
+   to `CLAUDE.md.para-new` next to it; only once that file is on disk does the old
+   `CLAUDE.md` go to the Trash, and then the new one is moved into its place
+   (`mv "$REPO_ROOT/CLAUDE.md.para-new" "$REPO_ROOT/CLAUDE.md"`). A failed write leaves
+   the old file untouched; a failed `trash` leaves both, the old one in place — either is
+   reported, and the vault is never left without a `CLAUDE.md`.
 9. `local/` to the Trash, last.
 
 Every other failure follows `SKILL.md` Step 5: reported, and the steps after it still run.

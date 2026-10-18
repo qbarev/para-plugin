@@ -61,8 +61,9 @@ before touching any files.
 
 6. **If it was a project, retire its id.** Append one line to
    `Archive/.removed-ids` in the format `project-id.md` specifies, using today's
-   date. The file already exists and carries a header comment — append below it, never
-   rewrite it. This is what keeps ids from being reused.
+   date. If the file is missing, first create it with the header `project-id.md` «The
+   journal» gives; an existing file is only appended to, never rewritten. This is what
+   keeps ids from being reused.
 
 7. **Handle the backlinks** per what the user chose in step 3, per `move.md`. Editing
    those other notes is itself Tier 2 — if the user only approved the deletion, ask

@@ -20,6 +20,7 @@ defines them.
 |---|---|---|
 | the PARA folders | `PARA_ROOT/` + `Projects`, `Areas`, `Resources`, `Archive`, `Inbox`, `Templates` | created when missing |
 | the note templates | `PARA_ROOT/Templates/` | seeded from the plugin, only when missing («Templates») |
+| the id journal | `PARA_ROOT/Archive/.removed-ids` | only its header, only when missing (`project-id.md` «The journal») |
 | vault config | `REPO_ROOT/.claude/para/vault.md`, `areas.md`; `adapter.md` only when `TASKS` is `mcp` | from `config.example/`; never overwritten |
 | the plugin's block | `REPO_ROOT/CLAUDE.md` | between the markers only («CLAUDE.md») |
 | the skills' permissions | `REPO_ROOT/.claude/settings.json` | merged, never replaced («Settings») |
@@ -44,8 +45,9 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 - `../../para/migrations.md` — the plugin's current `SCHEMA` and how a migration runs
 - `../../para/claude-md-block.md` — the block for `CLAUDE.md`
 - `../../para/confirm.md` — the tiers; the plan below is how `init` meets them
+- `../../para/project-id.md` — «The journal»: the header of the id journal (Step 5.1)
 - `../../config.example/vault.md`, `areas.md`, `adapter.md` — the shape of the config
-- scenario B only: `../../para/move.md` (how a move keeps links), `../../para/project-id.md`
+- scenario B only: `../../para/move.md` (how a move keeps links), `project-id.md`
   (issuing an id), `../../para/thresholds.md` (the area-staleness threshold and «The limit
   of mtime»), `paths.md` «IGNORE»
 - `../../lang/<LANG>.md` once `LANG` is known: the `init.*` strings
@@ -87,9 +89,13 @@ Obsidian value, a different `CLAUDE.md` block, a template in a migration, `REPO_
 in an existing `vault.md`) is Tier 2 (`confirm.md`): the plan is shown and `init` waits
 for a «yes» even then.
 
-Scenario B's moves do not count as such lines: a move changes where a note is, never
-what it says, and `confirm.md` puts moving in Tier 1. They are covered by the plan's
-«yes», given then or in advance — the snapshot is offered before them all the same
+Scenario B's moves are of two kinds, and this is the one statement of how an advance
+approval covers them. A move the user decided in their own answers (B3, or the sorting
+answers in `$ARGUMENTS`) changes where a note is, never what it says, and `confirm.md`
+puts moving in Tier 1: the plan's «yes», given then or in advance, covers it. A move
+decided by the rules alone (B2: to `Archive/` or `Resources/`) is `init`'s own judgement
+of the user's notes: it needs a live «yes» to the plan that shows it, **even when an
+approval was given in advance**. Either way the snapshot is offered before the moves
 (Step 4). A sorting question answered in advance is not asked; one left unanswered is
 asked, and nothing is applied before its answer, approval or not.
 
@@ -103,8 +109,9 @@ Read-only. Find out what the folder is and name the scenario.
 REPO_ROOT=$(pwd)
 ls -A "$REPO_ROOT"
 ls "$REPO_ROOT/.claude" "$REPO_ROOT/.claude/para" "$REPO_ROOT/.claude/skills" 2>/dev/null
-# the old embedded layout (scenario C): its config folder, its base layer, its skills
+# the old embedded layout (scenario C): its config folder or its base layer
 ls -d "$REPO_ROOT/.claude/para/local" "$REPO_ROOT/.claude/para/paths.md" 2>/dev/null   # old-layout
+# skill folders named like the old embedded skills: reported, never C on their own
 for s in inbox projects areas resources archive remove vault-lint; do
   [ -f "$REPO_ROOT/.claude/skills/$s/SKILL.md" ] && echo "old skill: $s"; done
 # notes: every .md not under a dot-entry of REPO_ROOT, except the repository's own files
@@ -129,11 +136,12 @@ Stop before anything else when:
 Then decide, **in this order**, and say what was found and which case it is:
 
 1. **Set up** — `.claude/para/vault.md` exists → «Re-run and migration» below.
-2. **Scenario C** — the old embedded tooling, recognised by its own layout only (the
-   `old-layout` lines above): its config folder `local/` or its base layer file
-   `paths.md` inside `.claude/para/`, or a `SKILL.md` of a PARA skill in
-   `.claude/skills/` (`inbox`, `projects`, `areas`, `resources`, `archive`, `remove`,
-   `vault-lint`). → «Scenario C».
+2. **Scenario C** — the old embedded tooling, recognised by its old base layer or config
+   only (the `old-layout` line above): its config folder `local/` or its base layer file
+   `paths.md` inside `.claude/para/`. → «Scenario C».
+   A skill folder named like one of the old skills (the `old skill:` lines) without
+   either is **not** C: go on to B or A by the rules below. Say which folder was found
+   and that `init` leaves it alone; the plan's «not done» names it again.
    A `.claude/para/` holding only this plugin's config files (`areas.md`, `adapter.md`)
    and no `vault.md` is **not** C: it is a first run of `init` that was interrupted or
    refused before `vault.md`. Go on to B or A below as if it were not there, except that
@@ -213,7 +221,7 @@ nothing is applied before a «yes» (or the approval given in advance, within th
 The plan names, in this order:
 
 1. `REPO_ROOT` (this folder) and `PARA_ROOT`.
-2. The folders to create.
+2. The folders to create, and the id journal when it is missing.
 3. The templates to copy, each with the changes «Templates» makes to it.
    In scenario B, here: the moves, the projects, `IGNORE`, the held duplicates and the
    links that will break («Scenario B», «The plan's B part»).
@@ -242,7 +250,9 @@ Scenario A has nothing to save and skips this step.
 
 In this order, each step create-when-missing / merge-when-present:
 
-1. Folders — `mkdir -p` each, quoted.
+1. Folders — `mkdir -p` each, quoted. Then `Archive/.removed-ids`, when missing, holding
+   only the header `project-id.md` «The journal» gives; an existing one is kept as it is
+   (scenario C's included).
 2. Templates («Templates»).
    - Scenario B: then the moves and the projects («Scenario B», «B4»).
      They need the folders and `Templates/Project.md` in place, and they come before
@@ -253,11 +263,11 @@ In this order, each step create-when-missing / merge-when-present:
 6. `areas.md`; `adapter.md` for `mcp` (`mcp-generic.md` step 8).
 7. `vault.md` — last.
 
-Config files are written from `config.example/<file>`, keeping its title, its «Keys»
-table and every section after it, and dropping the paragraphs addressed to someone
-filling in the form (the one opening with bold «Vault-specific», and «Fill this in from
-scratch»). In the table, every *italic placeholder* is replaced by the value **in
-backticks** — ``| `LANG` | `en` |`` — and an empty value leaves the cell empty
+`vault.md` and `areas.md` are written from `config.example/<file>`, keeping its title,
+its «Keys» table and every section after it, and dropping the paragraphs addressed to
+someone filling in the form (the one opening with bold «Vault-specific», and «Fill this
+in from scratch»); `adapter.md` is written as `mcp-generic.md` step 8 says. In the
+table, every *italic placeholder* is replaced by the value **in backticks** — ``| `LANG` | `en` |`` — and an empty value leaves the cell empty
 (`IGNORE` in scenario A, `GROUPS` under `GROUPING = none`); a list is the backticked
 items separated by commas. `REPO_ROOT` is the absolute path, no `~`. `SCHEMA` is the
 current one from `migrations.md`.
@@ -267,8 +277,9 @@ folder or a template could not be written, the vault is not there: **skip `areas
 `adapter.md` and `vault.md`** (no config without a vault), report it, and the next run
 starts over as a first run. Any other failure (`areas.md`, `adapter.md`, a merge into
 `CLAUDE.md`, `.claude/settings.json` or `.obsidian/`) does not hold `vault.md` back: the
-report names it, the skills stop on a missing `areas.md` or `adapter.md` by themselves,
-and the next run fills the gap. Writes into `.claude/` may need the user's permission; a
+report names it, the skills stop on a missing `areas.md` (its own opening says so) or
+`adapter.md` (`paths.md` «The task backend and its adapter») by themselves, and the next
+run fills the gap. Writes into `.claude/` may need the user's permission; a
 refusal is a failure like any other, reported and never worked around.
 
 ## Step 6 — Report
@@ -325,15 +336,17 @@ from Obsidian land elsewhere; links stop updating on rename).
 
 Merge into `REPO_ROOT/.claude/settings.json` — never replace it; a file that is not
 plain JSON is not touched and is reported, as in «Obsidian». Add each of these to
-`permissions.allow` when it is not there yet, keeping every other key and entry. They
-are the permissions the skills use (inspection commands; `sed` is among them because
-the skills use it to read, never with `-i`):
+`permissions.allow` when it is not there yet, keeping every other key and entry:
 
 `Bash(find:*)`, `Bash(grep:*)`, `Bash(stat:*)`, `Bash(cat:*)`, `Bash(ls:*)`,
-`Bash(sed:*)`, `Bash(head:*)`, `Bash(tail:*)`, `Bash(sort:*)`, `Bash(uniq:*)`,
+`Bash(head:*)`, `Bash(tail:*)`, `Bash(sort:*)`, `Bash(uniq:*)`,
 `Bash(wc:*)`, `Bash(diff:*)`, `Bash(basename:*)`, `Bash(date:*)`, `Bash(tr:*)`
 
-Nothing else in the file is touched: no permission is removed, none that writes is added.
+They let these fourteen commands run without a prompt, with any arguments — and nothing
+else: every other command (a move, `trash`, `sed`, `awk`, a write) still asks as usual.
+The skills use them to read only; `find` in particular is used read-only, never with
+`-delete` or an `-exec` that changes a file. Nothing else in the file is touched, and no
+permission is removed — `init` only merges additions.
 
 ### CLAUDE.md
 
@@ -362,8 +375,8 @@ again: their answers are in it.
    version» says. Lower or missing → the steps `migrations.md` lists for each version up
    to the current one join the plan, run as it says.
 3. **Check every piece** of «Step 5» against the disk with the stored values: missing
-   folders, missing templates (`Task.md` only under `files`), `areas.md` (missing → ask
-   question 4 only), `adapter.md` under `mcp` (missing → the `mcp-generic.md` procedure),
+   folders and id journal, missing templates (`Task.md` only under `files`), `areas.md`
+   (missing → ask question 4 only), `adapter.md` under `mcp` (missing → the `mcp-generic.md` procedure),
    the Obsidian keys, the permissions, the `CLAUDE.md` block, and what scenario C may
    have left (`scenario-c.md` «Leftovers on a re-run»). Only what is missing or
    different joins the plan.
@@ -547,7 +560,8 @@ At the plan's item 3, each block headed by its string:
 - `init.b.moves` — one line per move, `from → to`, grouped by destination; a folder
   moved whole is one line; a folder moved entry by entry says what stays behind or
   moves on its own line. A project line names the new folder, its id, its `short` and
-  the overview. Then the totals: moves, and notes moved — **computed, not tallied**: the
+  the overview, and — under `pairing: separate` — that the project is also created in
+  the task app (`project.create`, «Projects»). Then the totals: moves, and notes moved — **computed, not tallied**: the
   sum of the survey's note counts for the units that move (a folder's count minus the
   notes that stay behind or move on their own line, each counted once).
 - `init.b.ignore` — every path that joins `IGNORE`, each with why.

@@ -27,8 +27,9 @@ The highest id currently spoken for is the maximum across three sources:
 } | sort | tail -1
 ```
 
-The journal's header line spells the format as `PROJ-xxxx`, which this pattern does not
-match — that is intentional, so the comment can never be mistaken for a retired id.
+The journal's header line (below) spells the format as `PROJ-xxxx`, which this pattern
+does not match — that is intentional, so the header can never be mistaken for a retired
+id.
 
 Add 1 to the number, zero-pad to four digits. No hits at all → `PROJ-0001`.
 
@@ -38,7 +39,16 @@ do not affect the count.
 
 ## The journal
 
-`Archive/.removed-ids` — one line per deleted project, appended by `/remove`:
+`Archive/.removed-ids` — a header line, then one line per deleted project, appended by
+`/remove`. The header is exactly this line, the one statement of it:
+
+```
+# Ids of deleted projects, never to be reused. One per line: PROJ-xxxx  YYYY-MM-DD  title
+```
+
+`/para:init` creates the file holding only the header when it is missing; `/remove`
+does the same if it is still missing when it appends. An existing file is never
+rewritten, header or not. An entry:
 
 ```
 PROJ-0042  2026-09-12  Title of the deleted project
