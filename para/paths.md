@@ -97,6 +97,8 @@ Skills run operations **per the adapter for `TASKS`**:
 
 - `TASKS` = `todoist` or `files` → the adapter is `adapters/<TASKS>.md` in the base layer;
 - `TASKS` = `mcp` → the adapter is `<REPO_ROOT>/.claude/para/adapter.md`, in the vault.
+  If that file does not exist, **stop and say so** with the same message as a missing
+  `vault.md` above — "run `/para:init` from the vault root" — and write nothing.
 
 ## The inbox is the backend's inbox, not a folder
 
@@ -160,21 +162,20 @@ told `/para:init` to leave as it is. `/para:init` fills it when it adopts an exi
 vault; the user may edit it. A path is ignored when it **is** an entry or lies
 **under** one (`Daily` covers `Daily/2026-09-01.md`). No skill moves, edits, archives or
 deletes an ignored path, and no skill writes into one. `/para:vault-lint` leaves ignored
-paths out of **every** check except the duplicate-name check (below).
+paths out of **every** check except the duplicate-name check: `IGNORE` hides nothing
+from it, because Obsidian resolves links across the whole of `REPO_ROOT`, ignored or not
+(`note-format.md` «Name collisions»). This is the one statement of that exception.
 
 The value is the backticked items of the `IGNORE` row, separated by commas. To filter a
 list of absolute paths (one per line) down to those outside `IGNORE`:
 
 ```bash
-ignore_list=$(sed -n 's/^| `IGNORE` |\(.*\)|[[:space:]]*$/\1/p' "$REPO_ROOT/.claude/para/vault.md" \
-  | grep -oE '`[^`]+`' | tr -d '`')
+ignore_list=$(grep -E '^\| `IGNORE` \|' "$REPO_ROOT/.claude/para/vault.md" \
+  | grep -oE '`[^`]+`' | tail -n +2 | tr -d '`')
 not_ignored() { while IFS= read -r p; do r=${p#"$REPO_ROOT"/}; r=${r#./}; skip=
   while IFS= read -r i; do [ -n "$i" ] && case "$r" in "$i"|"$i"/*) skip=1 ;; esac
   done <<<"$ignore_list"; [ -z "$skip" ] && printf '%s\n' "$p"; done; }
 ```
-
-`IGNORE` hides nothing from the duplicate-name check: Obsidian resolves links across the
-whole of `REPO_ROOT`, ignored or not (`note-format.md` «Name collisions»).
 
 ## Rules
 

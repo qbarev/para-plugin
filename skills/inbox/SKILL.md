@@ -1,6 +1,6 @@
 ---
 name: inbox
-description: Work with the inbox of the PARA vault, which lives in the task manager's inbox (Todoist «Входящие») — capture a raw thought into Todoist, list what is sitting there unprocessed, or process captures one by one into their proper PARA folder. Use when the user wants to capture a note, or says "capture this", "add to the inbox", "what is in the inbox", "process the inbox", "запиши", "закинь в инбокс", "что в инбоксе", "покажи инбокс", "разбери инбокс", "разгреби инбокс".
+description: Work with the inbox of the PARA vault, which lives in the task app's inbox — capture a raw thought into it, list what is sitting there unprocessed, or process captures one by one into their proper PARA folder. Use when the user wants to capture a note, mentions their task app's inbox (Todoist «Входящие», for example), or says "capture this", "add to the inbox", "what is in the inbox", "process the inbox", "запиши", "закинь в инбокс", "что в инбоксе", "покажи инбокс", "разбери инбокс", "разгреби инбокс".
 argument-hint: add <text> | list | process
 ---
 
@@ -14,8 +14,7 @@ Under `TASKS = files` the inbox is the `Inbox/` folder (`paths.md` says what tha
 including strays); the steps below are unchanged except the strays handling.
 
 Every task call is an operation from `tasks.md`, run per the adapter for `TASKS`. If the
-backend is unavailable, `tasks.md` «Backend missing» applies: say so and stop — never
-fall back to writing a file.
+backend is unavailable, `tasks.md` «Backend missing» applies.
 
 ## Base layer
 
@@ -78,7 +77,7 @@ inbox with proposed destinations and ask the user to approve in bulk.
 
    | Route | What happens |
    |---|---|
-   | `inbox.route.action` | a to-do outside any project → move it to the area the user picks (`task.move` with `area`; the names are those `tasks.md` gives for `area`, which under `TASKS = files` are `GROUPS` in `areas.md`); wording checked per `tasks.md` «What a task is», a rewording proposed before the move |
+   | `inbox.route.action` | a to-do outside any project → the wording checked per `tasks.md` «What a task is» and a rewording proposed and agreed first, then `task.move` with the `area` the user picks (the names are those `tasks.md` gives for `area`) and the agreed `title` |
    | `inbox.route.project_task` | a step of an existing project → the project found per `find-target.md`, the wording proposed per `tasks.md` «What a task is», then `task.move` with that `project_ref` and the new `title`; the task stays open, nothing is created or closed. Under `TASKS = files` a taken basename is a collision: `note-format.md` «Name collisions» |
    | `inbox.route.project` | an effort with an end state → hand off to `/projects create` |
    | `inbox.route.area` | ongoing responsibility → `/areas create`, or append to an existing Area |

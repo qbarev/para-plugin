@@ -5,7 +5,7 @@ first.
 
 ## What actually protects wikilinks
 
-`CLAUDE.md` notes that Obsidian is configured with `alwaysUpdateLinks: true`. That is a
+`/para:init` sets Obsidian's `alwaysUpdateLinks: true` (its «Obsidian» section). That is a
 feature of **Obsidian's own rename/move commands**. A skill moving a file with `mv`
 bypasses Obsidian entirely, so nothing rewrites anything — do not rely on it, and do not
 tell the user their links were updated.

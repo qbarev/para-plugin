@@ -22,7 +22,7 @@ Read before acting, each as `../../para/<file>.md` relative to this skill's base
 
 - `../../para/paths.md` — always, including «Language»: the strings below come from `lang/<LANG>.md`
 - `.claude/para/areas.md` (vault config, under `REPO_ROOT`) — always; this skill is meaningless without the model
-- `../../para/note-format.md` — for `create`
+- `../../para/note-format.md` — for `create`; for `review` under `TASKS = files`, «Legacy fields»
 - `../../para/find-target.md` — when `review` needs to resolve a named area
 - `../../para/confirm.md` — `create` writes; `review` writes nothing
 - `../../para/thresholds.md` — for `review`
@@ -65,7 +65,8 @@ Read-only. Answers "which of my responsibilities am I not looking at". With an a
 review only that area; with none, every group `GROUPS` lists — however many that is.
 
 1. **Walk `Areas/`** recursively. For every note: path, the grouping field, and mtime
-   (`stat -f '%m %N'`).
+   (`stat -f '%m %N'`). Under `TASKS = files`, leave out `*/Tasks/*`: those are task
+   notes, not area notes (`note-format.md` «Legacy fields»).
 
 2. **Read the frontmatter** of each, and the `area.current_state` section where present. Do not
    read the full bodies — this is a sweep, not a summary of each note.

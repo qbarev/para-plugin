@@ -1,6 +1,6 @@
 ---
 name: projects
-description: Work with Projects in the Obsidian PARA vault and their Todoist pairs — list the active projects, create a project (folder plus Todoist project), summarize where a project stands, or add a task to a project in Todoist. Use when the user says "list projects", "show projects", "what am I working on", "create a project", "new project", "project overview", "project status", "add a task", "какие проекты", "список проектов", "покажи проекты", "что у меня в работе", "заведи проект", "новый проект", "саммари по проекту", "обзор проекта", "что по проекту", "статус проекта", "где я по проекту", "добавь задачу", "заведи задачу".
+description: Work with Projects in the Obsidian PARA vault and their pairs in the task app — list the active projects, create a project (folder plus a project in the task app), summarize where a project stands, or add a task to a project in the task app (Todoist, for example). Use when the user says "list projects", "show projects", "what am I working on", "create a project", "new project", "project overview", "project status", "add a task", "какие проекты", "список проектов", "покажи проекты", "что у меня в работе", "заведи проект", "новый проект", "саммари по проекту", "обзор проекта", "что по проекту", "статус проекта", "где я по проекту", "добавь задачу", "заведи задачу".
 argument-hint: list | create <description> | overview <project> | task <project> <task>
 ---
 
@@ -237,9 +237,9 @@ surfaces something worth fixing, say so and let the user decide.
    - A past deadline: the `list.deadline_passed` string.
    - The `list.legacy` string when legacy fields are present, or a legacy `Tasks/` is.
    - A project whose backlog is empty: the `list.backlog_empty` string.
-   - The last line (`list.orphans`) names backend projects that no overview points at (`project.list` once,
-     matched by `ref`; not the inbox, not `AREA_TASK_PROJECTS`). Drop it when empty or
-     when the adapter does not support `project.list`.
+   - The last line (`list.orphans`) names backend projects that no overview points at,
+     found as `tasks.md` «Notes on the table», `project.list`, says. Drop it when empty
+     or when the adapter does not support `project.list`.
    - Drop any blank field rather than printing a placeholder. An empty `Projects/` is a
      valid answer: say it plainly.
 

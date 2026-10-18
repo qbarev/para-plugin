@@ -34,8 +34,8 @@ targets. Byte comparison is the only correct one here.
 and `not_ignored` as `paths.md` gives them. **Every check leaves ignored paths out**:
 the `find` lists below pipe through `not_ignored`, and a `grep` hit whose file is
 ignored is dropped (Group 2 runs over a pre-filtered note list). The one exception is
-`lint.finding.duplicate_names`, which deliberately includes them: links resolve across
-the whole vault, ignored paths included. `--fix` never edits an ignored path.
+`lint.finding.duplicate_names`, for the reason `paths.md` «IGNORE» gives. `--fix` never
+edits an ignored path.
 
 **Exclude `Templates/` from every check.** This includes the `id`, `project:` and
 `REPO_ROOT` commands, which recurse into it unless told otherwise. A template is supposed to contain `{{title}}`
@@ -81,7 +81,7 @@ diff <(grep -hoE '^\| `[A-Z_]+`' "$SKILL_DIR/../../config.example/"*.md | sort) 
 
 **`lint.finding.duplicate_names`.** Wikilinks resolve by basename, so two files with the same name
 make every link to that name ambiguous. Check across `REPO_ROOT`, not just `PARA_ROOT`,
-and **including** `IGNORE` (`paths.md` «IGNORE»).
+and **including** `IGNORE` — the exception `paths.md` «IGNORE» states.
 
 ```bash
 find "$REPO_ROOT" -name "*.md" -not -path "*/.*" -not -path "*/Templates/*" -exec basename {} \; | sort | uniq -d
@@ -172,9 +172,12 @@ once and run each `grep` below over it instead of over `"$PARA_ROOT"`:
 
 ```bash
 find "$PARA_ROOT" -name "*.md" -not -path "*/.*" -not -path "*/Templates/*" | not_ignored \
-  | tr '\n' '\0' > "$TMPDIR/para-notes"
-xargs -0 grep -nE '<pattern>' /dev/null < "$TMPDIR/para-notes"   # in place of grep -rnE … "$PARA_ROOT"
+  | tr '\n' '\0' > "${TMPDIR:-/tmp}/para-notes"
 ```
+
+Every command in this group reads that list, in the form
+`xargs -0 grep … /dev/null < "${TMPDIR:-/tmp}/para-notes"` (the `/dev/null` makes `grep` print the
+file name even for a single file).
 
 Values come from `note-format.md`; do not hardcode a second copy of the allowed list
 here — read it.
@@ -184,19 +187,22 @@ here — read it.
   "Allowed values" list in `note-format.md` at run time, which for `area` and the
   grouping field means `GROUPS` in `areas.md`. The lists are deliberately not
   repeated here, so that changing one there changes this check.
+- The Area grouping field and `PLACEMENT_CHECK` (`areas.md`) are checked on the notes
+  under `Areas/`. Under `TASKS = files`, leave out `*/Tasks/*` there: those are task
+  notes, not area notes (`note-format.md` «Legacy fields»).
 - **`lint.finding.dates`** — `deadline`, `created` not matching `YYYY-MM-DD`. A non-ISO date stops
   being a Date property in Obsidian and silently drops out of sorting. Legacy `due` in
   old task notes is checked too, while they exist.
 
   ```bash
-  grep -rnE '^(deadline|due|created):[[:space:]]*[^[:space:]]' "$PARA_ROOT" --include="*.md" --exclude-dir=Templates \
+  xargs -0 grep -nE '^(deadline|due|created):[[:space:]]*[^[:space:]]' /dev/null < "${TMPDIR:-/tmp}/para-notes" \
     | grep -vE ':[[:space:]]*[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]*$'
   ```
 
 - **`lint.finding.tag_placeholders`** — a bare trailing slash never replaced with a real slug.
 
   ```bash
-  grep -rnE '^[[:space:]]+- (project|area|resource|topic)/[[:space:]]*$' "$PARA_ROOT" --include="*.md" --exclude-dir=Templates
+  xargs -0 grep -nE '^[[:space:]]+- (project|area|resource|topic)/[[:space:]]*$' /dev/null < "${TMPDIR:-/tmp}/para-notes"
   ```
 
 - **`lint.finding.missing_subfolders`** — `Notes/`, `Resources/`, `Results/`. Check
@@ -206,7 +212,7 @@ here — read it.
   (`note-format.md`).
 
   ```bash
-  grep -rlE '^(short|tasks_ref|todoist):' "$PARA_ROOT" --include="*.md" --exclude-dir=Templates \
+  xargs -0 grep -lE '^(short|tasks_ref|todoist):' /dev/null < "${TMPDIR:-/tmp}/para-notes" \
     | grep -vE '/(Projects|Archive)/[^/]+/[^/]+\.md$'
   ```
 
@@ -253,10 +259,10 @@ the vault is allowed to be in.
 - **`lint.finding.unpaired`** — only under `pairing: separate`; two lists (counts printed
   with the `lint.unpaired_counts` string). Projects in `Projects/` with
   a blank or missing `tasks_ref`. Backend projects that no overview in `Projects/` or
-  `Archive/` points at: `project.list` once, matched by `ref`, leaving out the inbox
-  (`is_inbox`) and the `AREA_TASK_PROJECTS` names (`areas.md`); an archived backend
-  project paired with an overview in `Archive/` is the normal closed state, not a
-  finding. Skip the second list when `project.list` is not supported.
+  `Archive/` points at, found as `tasks.md` «Notes on the table», `project.list`, says;
+  an archived backend project paired with an overview in `Archive/` is the normal
+  closed state, not a finding. Skip the second list when `project.list` is not
+  supported.
 - **`lint.finding.old_field_name`** — overviews carrying `todoist:` where `tasks_ref:` is now
   expected (`note-format.md`). Count and names; renaming is the user's call.
 
@@ -278,8 +284,8 @@ the vault is allowed to be in.
   a stray is already reported in Group 1, and an archived note is supposed to be
   unlinked.
 
-- **`lint.finding.no_frontmatter`** — they predate the convention. `CLAUDE.md` says to leave
-  them alone, so this is a count and a list, never a migration offer. Do not repeat the
+- **`lint.finding.no_frontmatter`** — they predate the convention, and `note-format.md`
+  «Notes predating the convention» says to leave them alone, so this is a count and a list, never a migration offer. Do not repeat the
   full list on every run if it is long — give the count and the folders. Count with the
   command, never by reading notes one by one — a hand count drifts from run to run:
 

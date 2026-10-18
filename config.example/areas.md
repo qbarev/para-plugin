@@ -34,8 +34,7 @@ every line of tooling.
   that cannot be left blank: it decides where the file goes.
 - **`PLACEMENT_CHECK`** is one of `/vault-lint`'s schema checks.
 - **`AREA_TASK_PROJECTS`** names the task-app projects that hold tasks belonging to
-  no project (`tasks.md`, «Area projects»). They have no folder in `Projects/` and are
-  never reported as unpaired.
+  no project; `tasks.md` «Area projects» says how they are treated.
 
 ## Shape of `areas review` output
 
