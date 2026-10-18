@@ -1,0 +1,10 @@
+{
+  "attachmentFolderPath": "attachments",
+  "showLineNumber": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "Inbox",
+  "alwaysUpdateLinks": true,
+  "userIgnoreFilters": [
+    "CLAUDE.md"
+  ]
+}
